@@ -20,7 +20,7 @@ public class ValidatorResponse {
     }
 
     public static ValidatorResponse partial(byte errorCode, MIDFData data) {
-        return new ValidatorResponse(ValidatorType.PARTIAL, errorCode, segment);
+        return new ValidatorResponse(ValidatorType.PARTIAL, errorCode, data);
     }
 
     public ValidatorType getType() {
