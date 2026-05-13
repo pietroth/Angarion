@@ -1,5 +1,4 @@
 package br.angarion.dev.api.communication;
 
-public interface Family {
-    
+public interface MIDFData {
 }

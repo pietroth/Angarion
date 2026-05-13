@@ -1,4 +1,4 @@
-package br.angarion.dev.api.network;
+package br.angarion.dev.engine.network.transport;
 
 import java.lang.foreign.MemorySegment;
 
