@@ -1,5 +1,6 @@
 package br.angarion.dev.engine.network.client;
 
+import br.angarion.dev.api.network.ClientConsumer;
 import br.angarion.dev.api.network.ClientManager;
 
 public class EngineClientManager implements ClientManager{
@@ -30,7 +31,7 @@ public class EngineClientManager implements ClientManager{
     }
 
     @Override
-    public void forEachOnline() {
+    public void forEachOnline(ClientConsumer consumer) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'forEachOnline'");
     }
