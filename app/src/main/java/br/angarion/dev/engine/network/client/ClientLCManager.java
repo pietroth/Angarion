@@ -3,10 +3,10 @@ package br.angarion.dev.engine.network.client;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 
-import br.angarion.dev.api.network.Connection;
-import br.angarion.dev.api.network.ConnectionCreatedListener;
-import br.angarion.dev.engine.network.NetworkAggregatorSingleton;
+import br.angarion.dev.engine.network.transport.ConnectionCreatedListener;
+import br.angarion.dev.engine.network.transport.Connection;
 import br.angarion.dev.engine.network.protocol.ConnectionProcessedListener;
+import br.angarion.dev.engine.network.NetworkAggregatorSingleton;
 import br.angarion.dev.engine.network.protocol.IntentionGateway;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntStack;

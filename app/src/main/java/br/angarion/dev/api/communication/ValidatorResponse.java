@@ -7,7 +7,7 @@ public class ValidatorResponse {
 
     private ValidatorResponse(ValidatorType type, byte errorCode, MIDFData data) {
         this.type = type;
-        this.errorCode = code;
+        this.errorCode = errorCode;
         this.data = data;
     }
 
@@ -31,7 +31,7 @@ public class ValidatorResponse {
         return errorCode;
     }
 
-    public MemorySegment getData() {
+    public MIDFData getData() {
         return data;
     }
 }

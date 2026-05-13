@@ -9,12 +9,11 @@ import br.angarion.dev.engine.communication.validator.ValidatorType;
 import br.angarion.dev.engine.runtime.ComponentResolver;
 import br.angarion.dev.engine.runtime.InnerProcessor;
 import br.angarion.dev.engine.communication.MIDFData;
+import br.angarion.dev.engine.network.transport.ConnectionReceivedListener;
+import br.angarion.dev.engine.network.transport.Connection;
 
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
-
-import br.angarion.dev.api.network.Connection;
-import br.angarion.dev.api.network.ConnectionReceivedListener;
 
 public class IntentionGateway implements ConnectionReceivedListener {
     private final ComponentResolver processingPipeline;

@@ -2,8 +2,8 @@ package br.angarion.dev.engine.network;
 
 import java.lang.foreign.MemorySegment;
 
-import br.angarion.dev.engine.communication.event.target.TargetModifier;
-import br.angarion.dev.engine.communication.event.target.TargetScope;
+import br.angarion.dev.api.communication.TargetModifier;
+import br.angarion.dev.api.communication.TargetScope;
 import br.angarion.dev.engine.network.client.ClientLCManager;
 
 public class MessageDeliveryHandler {

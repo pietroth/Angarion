@@ -1,7 +1,7 @@
 package br.angarion.dev.engine.communication.event;
 
 import br.angarion.dev.engine.communication.MIDFData;
-import br.angarion.dev.engine.communication.event.target.TargetScope;
+import br.angarion.dev.api.communication.TargetScope;
 import br.angarion.dev.engine.communication.MIDF;
 
 public class Event<T extends MIDFData> extends MIDF<T> {
