@@ -60,6 +60,10 @@ public class ClientLCManager implements ConnectionCreatedListener {
         notifyConnectionProcessed(connection);
     }
 
+    public boolean isConnected(int id) {
+        return id >= 0 && id < maxClients && clients[id] != null;
+    }
+
     public Client[] getClients() {
         return clients;
     }
