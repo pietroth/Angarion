@@ -1,7 +1,5 @@
 package br.angarion.dev.api.communication;
 
-import java.lang.foreign.MemorySegment;
-
 public class ValidatorResponse {
     private final ValidatorType type;
     private final byte errorCode;
