@@ -32,8 +32,7 @@ public class EngineClientManager implements ClientManager{
 
     @Override
     public void forEachOnline(ClientConsumer consumer) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'forEachOnline'");
+        clientLCManager.forEachOnline(consumer);
     }
     
 }

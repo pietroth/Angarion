@@ -3,6 +3,7 @@ package br.angarion.dev.engine.network.client;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 
+import br.angarion.dev.api.network.ClientConsumer;
 import br.angarion.dev.engine.network.transport.ConnectionCreatedListener;
 import br.angarion.dev.engine.network.transport.Connection;
 import br.angarion.dev.engine.network.protocol.ConnectionProcessedListener;
@@ -81,6 +82,14 @@ public class ClientLCManager implements ConnectionCreatedListener {
             }
         }
         return count;
+    }
+
+    public synchronized void forEachOnline(ClientConsumer consumer) {
+        for (Client client : clients) {
+            if (client != null) {
+                consumer.accept(client.getId());
+            }
+        }
     }
 
     public synchronized void disconnectClient(int id) {
