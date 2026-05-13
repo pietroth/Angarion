@@ -73,7 +73,17 @@ public class ClientLCManager implements ConnectionCreatedListener {
         return clients[id];
     }
 
-    public void disconnectClient(int id) {
+    public synchronized int onlineCount() {
+        int count = 0;
+        for (Client client : clients) {
+            if (client != null) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public synchronized void disconnectClient(int id) {
         if (id >= 0 && id < maxClients && clients[id] != null) {
             clients[id] = null;
             freeIds.push(id);
