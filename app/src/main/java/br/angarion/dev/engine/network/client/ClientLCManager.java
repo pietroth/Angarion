@@ -19,7 +19,7 @@ public class ClientLCManager implements ConnectionCreatedListener {
     private final Client[] clients;
     private final IntStack freeIds; 
     private IntentionGateway intentionGateway;
-    private final int maxClients;
+    public final int maxClients;
 
     private final ObjectList<ConnectionProcessedListener> listeners = new ObjectArrayList<>();
 
