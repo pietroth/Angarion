@@ -1,4 +1,4 @@
-package br.angarion.dev.engine.communication.event.target;
+package br.angarion.dev.api.communication;
 
 public interface TargetModifier {
     int[] toArray();
