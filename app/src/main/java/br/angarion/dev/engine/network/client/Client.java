@@ -1,6 +1,6 @@
 package br.angarion.dev.engine.network.client;
 
-import br.angarion.dev.engine.network.transport.Connection;
+import br.angarion.dev.api.network.Connection;
 
 public class Client {
     private final int id;
