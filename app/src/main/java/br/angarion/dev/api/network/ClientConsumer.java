@@ -1,4 +1,4 @@
-package br.angarion.dev.api.communication;
+package br.angarion.dev.api.network;
 
 @FunctionalInterface
 public interface ClientConsumer {
