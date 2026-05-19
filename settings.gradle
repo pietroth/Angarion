@@ -16,3 +16,14 @@ include 'services:webservice'
 */
 
 rootProject.name = 'Angarion'
+
+include 'api'
+include 'engine'
+include 'processors'
+
+project(':api').projectDir = file('app/src/main/java/br/angarion/dev/api')
+project(':engine').projectDir = file('app/src/main/java/br/angarion/dev/engine')
+project(':processors').projectDir = file('app/src/main/java/br/angarion/dev/processors')
+
+project(':engine').buildFileName = 'src/main/java/build.gradle'
+project(':processors').buildFileName = 'src/main/java/build.gradle'

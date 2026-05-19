@@ -1,9 +1,16 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
-group = 'br.angarion.dev'
-version = '1.0-SNAPSHOT'
+allprojects {
+    group = 'br.angarion.dev'
+    version = '1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
 
 java {
     toolchain {
@@ -15,6 +22,9 @@ sourceSets {
     main {
         java {
             srcDirs = ['app/src/main/java']
+            exclude 'br/angarion/dev/api/**'
+            exclude 'br/angarion/dev/engine/**'
+            exclude 'br/angarion/dev/processors/**'
         }
     }
     test {
@@ -24,16 +34,15 @@ sourceSets {
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    implementation 'it.unimi.dsi:fastutil:8.5.18'
-    compileOnly 'com.google.auto.service:auto-service-annotations:1.1.1'
-    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+    implementation project(':api')
+    annotationProcessor project(':processors')
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+application {
+    mainClass.set('br.angarion.dev.App')
 }
