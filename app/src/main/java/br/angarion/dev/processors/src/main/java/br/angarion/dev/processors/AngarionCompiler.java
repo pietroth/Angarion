@@ -13,6 +13,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+
 import com.google.auto.service.AutoService;
 import com.palantir.javapoet.FieldSpec;
 import com.palantir.javapoet.TypeName;
@@ -24,7 +28,10 @@ import br.angarion.dev.api.communication.DataField;
 import br.angarion.dev.api.communication.FamilyConfiguration;
 import br.angarion.dev.api.communication.TypeConfiguration;
 import br.angarion.dev.engine.communication.IdentifierGlossary;
+import br.angarion.dev.engine.communication.MIDFData;
 import br.angarion.dev.engine.communication.codec.Codec;
+import br.angarion.dev.engine.communication.validator.Validator;
+import br.angarion.dev.engine.usecase.UseCase;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_25)
@@ -38,13 +45,20 @@ import br.angarion.dev.engine.communication.codec.Codec;
     })
 public class AngarionCompiler extends AbstractProcessor {
     private IdentifierGlossary glossary;
+    
+    private Types typeUtils;
+    private Elements elementUtils;
 
     public AngarionCompiler() {}
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+
         this.glossary = new IdentifierGlossary(); // Temporary solution
+
+        this.typeUtils = processingEnv.getTypeUtils();
+        this.elementUtils = processingEnv.getElementUtils();
     }
 
     @Override
@@ -74,28 +88,53 @@ public class AngarionCompiler extends AbstractProcessor {
 
         // Type processing
 
-        for (Element el : roundEnv.getElementsAnnotatedWith(TypeConfiguration.class)) {
-            /*
-                It don't works!
-                
-                if (!(el instanceof Type)) {
-                    throw new IllegalArgumentException
-                    ("the class annotated with br.angarion.dev.api.communication.TypeConfiguration must implement the br.angarion.dev.api.communication.Type interface");
-                }
-            */
+        TypeElement typeElement = elementUtils.getTypeElement("br.angarion.dev.api.communication.Type");
+        if (typeElement == null) {
+            processingEnv.getMessager().printError
+                ("br.angarion.dev.api.communication.Type was not found in the classpath");
+        }
+        TypeMirror targetInterfaceType = typeElement.asType();
 
+        for (Element el : roundEnv.getElementsAnnotatedWith(TypeConfiguration.class)) {
             TypeElement familyElement = getFamilyElement(el);
             FamilyConfiguration familyConfiguration = familyElement.getAnnotation(FamilyConfiguration.class);
             String familyName = familyConfiguration != null ? familyConfiguration.value() : "<missing-family-configuration>";
 
             TypeConfiguration configuration = el.getAnnotation(TypeConfiguration.class);
 
+            TypeMirror elementType = el.asType();
+
+            if (!typeUtils.isSubtype(elementType, targetInterfaceType)) {
+                processingEnv.getMessager().printError
+                    ("Type class must implement br.angarion.dev.api.communication.Type interface besides br.angarion.dev.api.communication.TypeConfiguration annotation");
+            }
+
             /*
-                Codec writing
+                begin Codec Builder
             */
             TypeSpec.Builder codecBuilder = TypeSpec.classBuilder(configuration.name() + "$C")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addSuperinterface(Codec.class);
+            
+            // end Codec Builder
+
+            /*
+                begin UseCase Builder
+            */
+            TypeSpec.Builder useCaseBuilder = TypeSpec.classBuilder(configuration.name() + "$UC")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addSuperinterface(UseCase.class);
+
+            // end UseCase Builder
+
+            /*
+                begin Validator Builder
+            */
+            TypeSpec.Builder validatorBuilder = TypeSpec.classBuilder(configuration.name() + "$V")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addSuperinterface(Validator.class);
+
+            // end Validator Builder
 
             processingEnv.getMessager().printMessage(
                 Diagnostic.Kind.NOTE,
@@ -110,7 +149,7 @@ public class AngarionCompiler extends AbstractProcessor {
                     );
 
                     /*
-                        For each field marked as @DataField, create and add a field in codecBuilder.
+                        For each field marked as @DataField, create and add a field in codecBuilder
                     */
                     codecBuilder.addField(FieldSpec.builder(TypeName.get(enclosed.asType()), enclosed.getSimpleName().toString())
                         .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
