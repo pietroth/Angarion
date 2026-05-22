@@ -28,7 +28,6 @@ import br.angarion.dev.api.communication.DataField;
 import br.angarion.dev.api.communication.FamilyConfiguration;
 import br.angarion.dev.api.communication.TypeConfiguration;
 import br.angarion.dev.engine.communication.IdentifierGlossary;
-import br.angarion.dev.engine.communication.MIDFData;
 import br.angarion.dev.engine.communication.codec.Codec;
 import br.angarion.dev.engine.communication.validator.Validator;
 import br.angarion.dev.engine.usecase.UseCase;
