@@ -15,11 +15,11 @@ public final class EventInConstruction {
     private static final VarHandle ORIGIN_ID = 
         LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("originId"));
 
-    public static void writeEvent(MemorySegment dest, int originId) {
+    public static final void writeEvent(MemorySegment dest, int originId) {
         ORIGIN_ID.set(dest, 0L, originId);
     }
 
-    public static int getOriginId(MemorySegment src) {
+    public static final int getOriginId(MemorySegment src) {
         return (int) ORIGIN_ID.get(src);
     }
 
