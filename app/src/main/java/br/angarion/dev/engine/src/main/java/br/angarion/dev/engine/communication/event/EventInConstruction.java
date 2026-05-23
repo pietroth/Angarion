@@ -20,7 +20,7 @@ public final class EventInConstruction {
     }
 
     public static final int getOriginId(MemorySegment src) {
-        return (int) ORIGIN_ID.get(src);
+        return (int) ORIGIN_ID.get(src, 0L);
     }
 
     public static final long LAYOUT_SIZE = LAYOUT.byteSize();
