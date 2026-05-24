@@ -75,6 +75,6 @@ public final class IRInConstruction {
         return (int) PROTOCOL_TOTAL_SIZE.get(src);
     }
 
-    public static final long LAYOUT_SIZE = LAYOUT.byteSize();
+    public static final long HEADER_SIZE = LAYOUT.byteSize();
 
 }
