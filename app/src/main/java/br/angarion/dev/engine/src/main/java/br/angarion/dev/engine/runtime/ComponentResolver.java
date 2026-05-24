@@ -1,7 +1,6 @@
 package br.angarion.dev.engine.runtime;
 
-import br.angarion.dev.engine.communication.MIDFData;
-import br.angarion.dev.engine.communication.codec.Codec;
+import br.angarion.dev.engine.communication.codec.DataLayout;
 import br.angarion.dev.engine.communication.validator.Validator;
 import br.angarion.dev.engine.usecase.UseCase;
 
@@ -9,14 +8,14 @@ import br.angarion.dev.engine.usecase.UseCase;
 public final class ComponentResolver {
     private final InnerProcessor[] processors = new InnerProcessor[4096];
 
-    public <T extends MIDFData> void register(
+    public <T extends DataLayout> void register(
         int family,
         int type,
         Validator<T> validator,
-        UseCase<T> useCase,
-        Codec<T> codec)
+        UseCase<T> useCase
+    )
     {
-        processors[pack(family, type)] = new InnerProcessor<>(validator, useCase, codec);
+        processors[pack(family, type)] = new InnerProcessor<>(validator, useCase);
     }
 
     public InnerProcessor<?> lookup(int family, int type) {
