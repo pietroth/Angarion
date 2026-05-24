@@ -49,7 +49,7 @@ public final class IntentionInConstruction {
             PathElement.groupElement("id")
         );
 
-    public static final void writeIntention(MemorySegment dest, int totalSize, int originId, int correlationId) {
+    public static final void writeHeader(MemorySegment dest, int totalSize, int originId, int correlationId) {
         PROTOCOL_TOTAL_SIZE.set(dest, 0L, totalSize);
         PROTOCOL_ID.set(dest, 0L, originId);
         CORRELATION_ID.set(dest, 0L, correlationId);
