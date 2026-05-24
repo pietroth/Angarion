@@ -9,12 +9,24 @@ import java.lang.invoke.VarHandle;
 
 import br.angarion.dev.engine.communication.ProtocolInConstruction;
 
-public final class IRInConstruction extends ProtocolInConstruction {
+public final class IRInConstruction {
+    private IRInConstruction(){}
     
+    /*
+        What's correlation Id? 
+        It's just the id that links the intentions with the IRs.
+    */
+
+    /*
+        The correlation Id does not exist directly because the protocol Id serves as correlation Id.
+        To save memory and avoid redundancy, we define the correlation ID within the protocol ID space. 
+    */
+
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
-        ValueLayout.JAVA_BYTE.withName("status"),
-        ValueLayout.JAVA_SHORT.withName("errorCode")
-    ).withByteAlignment(4);
+        ProtocolInConstruction.LAYOUT.withName("protocol"),
+        ValueLayout.JAVA_SHORT.withName("errorCode"),
+        ValueLayout.JAVA_BYTE.withName("status")
+    ).withByteAlignment(8);
 
     private static final VarHandle STATUS = 
         LAYOUT.varHandle(PathElement.groupElement("status"));
@@ -22,11 +34,25 @@ public final class IRInConstruction extends ProtocolInConstruction {
     private static final VarHandle ERROR_CODE = 
         LAYOUT.varHandle(PathElement.groupElement("errorCode"));
 
-    public static final void writeIR(MemorySegment dest, int status, int errorCode) {
+    private static final VarHandle PROTOCOL_TOTAL_SIZE = 
+        LAYOUT.varHandle(
+            PathElement.groupElement("protocol"),
+            PathElement.groupElement("totalSize")
+        );
+
+    private static final VarHandle PROTOCOL_ID = 
+        LAYOUT.varHandle(
+            PathElement.groupElement("protocol"),
+            PathElement.groupElement("id")
+        );
+
+    public static final void writeIR(MemorySegment dest, int totalSize, int correlationId, int status, int errorCode) {
         if (status > 2 || status < 0) {
             throw new IllegalArgumentException("Status must be between 0 and 2");
         }
 
+        PROTOCOL_TOTAL_SIZE.set(dest, 0L, status);
+        PROTOCOL_ID.set(dest, 0L, correlationId);
         STATUS.set(dest, 0L, status);
         ERROR_CODE.set(dest, 0L, errorCode);
     }
@@ -39,5 +65,14 @@ public final class IRInConstruction extends ProtocolInConstruction {
         return (int) ERROR_CODE.get(src, 0L);
     }
 
+    public static final int getCorrelationId(MemorySegment src) {
+        return (int) PROTOCOL_ID.get(src);
+    }
+
+    public static final int getTotalSize(MemorySegment src) {
+        return (int) PROTOCOL_TOTAL_SIZE.get(src);
+    }
+
     public static final long LAYOUT_SIZE = LAYOUT.byteSize();
+
 }
