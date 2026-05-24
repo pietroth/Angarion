@@ -35,7 +35,7 @@ public final class IRInConstruction extends ProtocolInConstruction {
         return (int) STATUS.get(src, 0L);
     }
 
-    public static final int getError(MemorySegment src) {
+    public static final int getErrorCode(MemorySegment src) {
         return (int) ERROR_CODE.get(src, 0L);
     }
 

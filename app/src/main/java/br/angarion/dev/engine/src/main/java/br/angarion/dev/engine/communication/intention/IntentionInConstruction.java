@@ -7,7 +7,9 @@ import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.invoke.VarHandle;
 
-public final class IntentionInConstruction {
+import br.angarion.dev.engine.communication.ProtocolInConstruction;
+
+public final class IntentionInConstruction extends ProtocolInConstruction {
     
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
         ValueLayout.JAVA_INT.withName("originId"),
