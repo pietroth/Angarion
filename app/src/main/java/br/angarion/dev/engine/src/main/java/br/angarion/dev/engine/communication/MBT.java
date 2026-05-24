@@ -13,4 +13,16 @@ public final class MBT {
     );
 
     public static final long LAYOUT_SIZE = LAYOUT.byteSize();
+
+    public static final int packTypeAndFamily(short type, short family) {
+        return (type << 16) | (family & 0xFFFF);
+    }
+
+    public static final short unpackType(int id) {
+        return (short) (id >> 16);
+    }
+
+    public static final short unpackFamily(int id) {
+        return (short) (id & 0xFFFF);
+    }
 }
