@@ -9,7 +9,7 @@ import java.lang.foreign.ValueLayout;
 public final class MBT {
     
     public static final StructLayout LAYOUT = MemoryLayout.structLayout(
-        ValueLayout.JAVA_INT.withName("typeId")
+        ValueLayout.JAVA_INT.withName("id")
     );
 
     public static final long LAYOUT_SIZE = LAYOUT.byteSize();
