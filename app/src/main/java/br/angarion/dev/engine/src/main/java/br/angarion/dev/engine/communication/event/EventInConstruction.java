@@ -39,7 +39,7 @@ public final class EventInConstruction {
             PathElement.groupElement("id")
         );
 
-    public static final void writeEvent(MemorySegment dest, int totalSize, int originId) {
+    public static final void writeHeader(MemorySegment dest, int totalSize, int originId) {
         PROTOCOL_TOTAL_SIZE.set(dest, 0L, totalSize);
         PROTOCOL_ID.set(dest, 0L, originId);
     }
