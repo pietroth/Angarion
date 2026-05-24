@@ -40,13 +40,15 @@ public final class IRInConstruction {
             PathElement.groupElement("totalSize")
         );
 
+    // Here it serves as the correlation Id.    
+
     private static final VarHandle PROTOCOL_ID = 
         LAYOUT.varHandle(
             PathElement.groupElement("protocol"),
             PathElement.groupElement("id")
         );
 
-    public static final void writeIR(MemorySegment dest, int totalSize, int correlationId, int status, int errorCode) {
+    public static final void writeHeader(MemorySegment dest, int totalSize, int correlationId, int status, int errorCode) {
         if (status > 2 || status < 0) {
             throw new IllegalArgumentException("Status must be between 0 and 2");
         }
