@@ -44,7 +44,7 @@ public final class IRInConstruction {
             throw new IllegalArgumentException("Status must be between 0 and 2");
         }
 
-        PROTOCOL_TOTAL_SIZE.set(dest, 0L, status);
+        PROTOCOL_TOTAL_SIZE.set(dest, 0L, totalSize);
         CORRELATION_ID.set(dest, 0L, correlationId);
         STATUS.set(dest, 0L, status);
         ERROR_CODE.set(dest, 0L, errorCode);
