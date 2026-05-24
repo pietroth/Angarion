@@ -8,6 +8,7 @@ import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.invoke.VarHandle;
 
 import br.angarion.dev.engine.communication.BaseProtocol;
+import br.angarion.dev.engine.communication.MBT;
 
 public final class IntentionInConstruction {
     private IntentionInConstruction(){}
@@ -24,6 +25,7 @@ public final class IntentionInConstruction {
 
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
         BaseProtocol.LAYOUT.withName("protocol"), // 4 bytes (1 int)
+        MBT.LAYOUT.withName("mbt"), // 4 bytes (1 int)
         ValueLayout.JAVA_INT.withName("originId"),
         ValueLayout.JAVA_INT.withName("correlationId")
     ).withByteAlignment(8);
@@ -40,8 +42,15 @@ public final class IntentionInConstruction {
     private static final VarHandle ORIGIN_ID = 
         LAYOUT.varHandle(PathElement.groupElement("originId"));
 
-    public static final void writeHeader(MemorySegment dest, int totalSize, int originId, int correlationId) {
+    private static final VarHandle MBT_ID =
+        LAYOUT.varHandle(
+            PathElement.groupElement("mbt"),
+            PathElement.groupElement("id")
+        );
+
+    public static final void writeHeader(MemorySegment dest, int typeId, int totalSize, int originId, int correlationId) {
         PROTOCOL_TOTAL_SIZE.set(dest, 0L, totalSize);
+        MBT_ID.set(dest, 0L, typeId);
         ORIGIN_ID.set(dest, 0L, originId);
         CORRELATION_ID.set(dest, 0L, correlationId);
     }
@@ -56,6 +65,10 @@ public final class IntentionInConstruction {
 
     public static final int getTotalSize(MemorySegment src) {
         return (int) PROTOCOL_TOTAL_SIZE.get(src, 0L);
+    }
+
+    public static final int getTypeId(MemorySegment src) {
+        return (int) MBT_ID.get(src, 0L);
     }
 
     public static final long HEADER_SIZE = LAYOUT.byteSize();
