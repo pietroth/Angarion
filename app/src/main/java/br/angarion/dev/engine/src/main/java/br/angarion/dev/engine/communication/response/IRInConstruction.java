@@ -77,4 +77,7 @@ public final class IRInConstruction {
 
     public static final long HEADER_SIZE = LAYOUT.byteSize();
 
+    public static final MemorySegment payloadSlice(MemorySegment message) {
+        return message.asSlice(HEADER_SIZE, message.byteSize() - HEADER_SIZE);
+    }
 }
