@@ -31,10 +31,12 @@ public final class EventInConstruction {
             PathElement.groupElement("totalSize")
         );
 
+    // Here it serves as the originId
+    
     private static final VarHandle PROTOCOL_ID = 
         LAYOUT.varHandle(
             PathElement.groupElement("protocol"),
-            PathElement.groupElement("originId")
+            PathElement.groupElement("id")
         );
 
     public static final void writeEvent(MemorySegment dest, int totalSize, int originId) {
