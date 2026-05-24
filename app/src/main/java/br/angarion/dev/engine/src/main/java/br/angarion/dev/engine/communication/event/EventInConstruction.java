@@ -6,7 +6,9 @@ import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
 
-public final class EventInConstruction {
+import br.angarion.dev.engine.communication.ProtocolInConstruction;
+
+public final class EventInConstruction extends ProtocolInConstruction {
 
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
         ValueLayout.JAVA_INT.withName("originId")
