@@ -7,7 +7,7 @@ import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.invoke.VarHandle;
 
-import br.angarion.dev.engine.communication.ProtocolInConstruction;
+import br.angarion.dev.engine.communication.BaseProtocol;
 
 public final class IRInConstruction {
     private IRInConstruction(){}
@@ -17,13 +17,9 @@ public final class IRInConstruction {
         It's just the id that links the intentions with the IRs.
     */
 
-    /*
-        The correlation Id does not exist directly because the protocol Id serves as correlation Id.
-        To save memory and avoid redundancy, we define the correlation ID within the protocol ID space. 
-    */
-
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
-        ProtocolInConstruction.LAYOUT.withName("protocol"),
+        BaseProtocol.LAYOUT.withName("protocol"), // 4 bytes (1 int)
+        ValueLayout.JAVA_INT.withName("correlationId"),
         ValueLayout.JAVA_SHORT.withName("errorCode"),
         ValueLayout.JAVA_BYTE.withName("status")
     ).withByteAlignment(8);
@@ -38,15 +34,10 @@ public final class IRInConstruction {
         LAYOUT.varHandle(
             PathElement.groupElement("protocol"),
             PathElement.groupElement("totalSize")
-        );
+        );  
 
-    // Here it serves as the correlation Id.    
-
-    private static final VarHandle PROTOCOL_ID = 
-        LAYOUT.varHandle(
-            PathElement.groupElement("protocol"),
-            PathElement.groupElement("id")
-        );
+    private static final VarHandle CORRELATION_ID = 
+        LAYOUT.varHandle(PathElement.groupElement("correlationId"));
 
     public static final void writeHeader(MemorySegment dest, int totalSize, int correlationId, int status, int errorCode) {
         if (status > 2 || status < 0) {
@@ -54,7 +45,7 @@ public final class IRInConstruction {
         }
 
         PROTOCOL_TOTAL_SIZE.set(dest, 0L, status);
-        PROTOCOL_ID.set(dest, 0L, correlationId);
+        CORRELATION_ID.set(dest, 0L, correlationId);
         STATUS.set(dest, 0L, status);
         ERROR_CODE.set(dest, 0L, errorCode);
     }
@@ -68,7 +59,7 @@ public final class IRInConstruction {
     }
 
     public static final int getCorrelationId(MemorySegment src) {
-        return (int) PROTOCOL_ID.get(src);
+        return (int) CORRELATION_ID.get(src);
     }
 
     public static final int getTotalSize(MemorySegment src) {

@@ -7,7 +7,7 @@ import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.invoke.VarHandle;
 
-import br.angarion.dev.engine.communication.ProtocolInConstruction;
+import br.angarion.dev.engine.communication.BaseProtocol;
 
 public final class IntentionInConstruction {
     private IntentionInConstruction(){}
@@ -22,13 +22,9 @@ public final class IntentionInConstruction {
         It simply indicates the ID of the client who made this intention"
     */
 
-    /*
-        The origin ID does not exist because the protocol ID serves as the origin ID. 
-        To save memory and avoid redundancy, we define the origin ID within the protocol ID space. 
-    */
-
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
-        ProtocolInConstruction.LAYOUT.withName("protocol"), 
+        BaseProtocol.LAYOUT.withName("protocol"), // 4 bytes (1 int)
+        ValueLayout.JAVA_INT.withName("originId"),
         ValueLayout.JAVA_INT.withName("correlationId")
     ).withByteAlignment(8);
 
@@ -41,22 +37,17 @@ public final class IntentionInConstruction {
             PathElement.groupElement("totalSize")
         );
 
-    // Here, it serves as the origin Id  
-
-    private static final VarHandle PROTOCOL_ID = 
-        LAYOUT.varHandle(
-            PathElement.groupElement("protocol"),
-            PathElement.groupElement("id")
-        );
+    private static final VarHandle ORIGIN_ID = 
+        LAYOUT.varHandle(PathElement.groupElement("originId"));
 
     public static final void writeHeader(MemorySegment dest, int totalSize, int originId, int correlationId) {
         PROTOCOL_TOTAL_SIZE.set(dest, 0L, totalSize);
-        PROTOCOL_ID.set(dest, 0L, originId);
+        ORIGIN_ID.set(dest, 0L, originId);
         CORRELATION_ID.set(dest, 0L, correlationId);
     }
 
     public static final int getOriginId(MemorySegment src) {
-        return (int) PROTOCOL_ID.get(src, 0L);
+        return (int) ORIGIN_ID.get(src, 0L);
     }
 
     public static final int getCorrelationId(MemorySegment src) {
