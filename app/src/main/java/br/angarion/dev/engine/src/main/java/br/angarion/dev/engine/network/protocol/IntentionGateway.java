@@ -66,7 +66,7 @@ public class IntentionGateway implements ConnectionReceivedListener {
             }
         }
 
-        processor.useCase().execute(IntentionInConstruction.getOriginId(intention), null); // need to fix
+        processor.useCase().execute(IntentionInConstruction.getOriginId(intention), intentionPayload);
 
         IRPublisherSingleton.get().publish(new IR.Builder()
             .success(IntentionInConstruction.getCorrelationId(intention), (byte) 0)
