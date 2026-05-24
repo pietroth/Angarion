@@ -20,7 +20,8 @@ public abstract class ProtocolInConstruction {
     private static final VarHandle ID = 
         LAYOUT.varHandle(PathElement.groupElement("id"));
 
-    public static final void writeProtcol(MemorySegment dest, int id) {
+    public static final void writeProtcol(MemorySegment dest, int id, int totalSize) {
+        TOTAL_SIZE.set(dest, 0L, totalSize);
         ID.set(dest, 0L, id);
     }
 
