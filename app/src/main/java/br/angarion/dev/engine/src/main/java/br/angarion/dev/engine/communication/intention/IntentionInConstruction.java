@@ -71,6 +71,14 @@ public final class IntentionInConstruction {
         return (int) MBT_ID.get(src, 0L);
     }
 
+    public static final short getFamily(MemorySegment src) {
+        return MBT.unpackFamily(getTypeId(src));
+    }
+
+    public static final short getType(MemorySegment src) {
+        return MBT.unpackType(getTypeId(src));
+    }
+
     public static final long HEADER_SIZE = LAYOUT.byteSize();
 
     public static final MemorySegment payloadSlice(MemorySegment message) {
