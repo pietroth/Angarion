@@ -2,7 +2,7 @@ package br.angarion.dev.engine.network.protocol;
 
 import br.angarion.dev.engine.communication.DataLayout;
 import br.angarion.dev.engine.communication.intention.IntentionInConstruction;
-import br.angarion.dev.engine.communication.response.IRInConstruction;
+import br.angarion.dev.engine.communication.response.IR;
 import br.angarion.dev.engine.communication.response.IRPublisherSingleton;
 import br.angarion.dev.engine.communication.validator.ValidatorResponse;
 import br.angarion.dev.engine.runtime.ComponentResolver;
@@ -40,16 +40,16 @@ public class IntentionGateway implements ConnectionReceivedListener {
 
             MemorySegment data = validationResult.getData();
             int payloadSize = (data == null || data == MemorySegment.NULL) ? 0 : (int) data.byteSize();
-            int totalSize = (int) IRInConstruction.HEADER_SIZE + payloadSize;
+            int totalSize = (int) IR.HEADER_SIZE + payloadSize;
 
             int correlationId = IntentionInConstruction.getCorrelationId(intention);
             int originId = IntentionInConstruction.getOriginId(intention);
 
             MemorySegment ir = arena.allocate(totalSize);
 
-            if (validationResult.getType() == IRInConstruction.INVALID) // validation invalid, publish IR and return
+            if (validationResult.getType() == IR.INVALID) // validation invalid, publish IR and return
             {
-                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.INVALID, validationResult.getErrorCode());
+                IR.writeHeader(ir, totalSize, correlationId, IR.INVALID, validationResult.getErrorCode());
 
                 IRPublisherSingleton.get().publish(
                     ir,
@@ -59,9 +59,9 @@ public class IntentionGateway implements ConnectionReceivedListener {
                 return;
             }
 
-            else if (validationResult.getType() == IRInConstruction.PARTIAL) // validation partial, publish IR and execute
+            else if (validationResult.getType() == IR.PARTIAL) // validation partial, publish IR and execute
             {
-                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.PARTIAL, validationResult.getErrorCode());
+                IR.writeHeader(ir, totalSize, correlationId, IR.PARTIAL, validationResult.getErrorCode());
 
                 IRPublisherSingleton.get().publish(
                     ir,
@@ -74,9 +74,9 @@ public class IntentionGateway implements ConnectionReceivedListener {
                 }
             }
 
-            else if (validationResult.getType() == IRInConstruction.SUCCESS) 
+            else if (validationResult.getType() == IR.SUCCESS) 
             {
-                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.SUCCESS, validationResult.getErrorCode());
+                IR.writeHeader(ir, totalSize, correlationId, IR.SUCCESS, validationResult.getErrorCode());
 
                 IRPublisherSingleton.get().publish(
                     ir,

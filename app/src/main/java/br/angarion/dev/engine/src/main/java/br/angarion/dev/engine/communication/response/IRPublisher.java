@@ -13,6 +13,6 @@ public class IRPublisher {
 
     public void publish(MemorySegment ir, int originId) {
         delivery.deliveryIr(ir, originId);
-        System.out.println("Published IR. CorrelationId: " + IRInConstruction.getCorrelationId(ir) + ", Status: " + IRInConstruction.getStatus(ir) + ", OriginId: " + originId);
+        System.out.println("Published IR. CorrelationId: " + IR.getCorrelationId(ir) + ", Status: " + IR.getStatus(ir) + ", OriginId: " + originId);
     }
 }
