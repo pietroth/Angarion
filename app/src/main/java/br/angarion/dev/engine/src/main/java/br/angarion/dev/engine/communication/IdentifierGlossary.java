@@ -56,7 +56,7 @@ public class IdentifierGlossary {
         Object2IntOpenHashMap<String> scopedTypes = requireTypes(familyName);
         int existingTypeId = scopedTypes.getInt(name);
         if (existingTypeId != -1) {
-            return pack(familyId, existingTypeId);
+            return pack((short) existingTypeId, (short) familyId);
         }
 
         int typeId = nextTypeIds.getInt(familyName);
@@ -65,7 +65,7 @@ public class IdentifierGlossary {
         scopedTypes.put(name, typeId);
         nextTypeIds.put(familyName, typeId + 1);
 
-        return pack(familyId, typeId);
+        return pack((short) typeId, (short) familyId);
     }
 
     public int registerType(String familyName, String name, int id) {
@@ -113,15 +113,15 @@ public class IdentifierGlossary {
     }
 
     public static int unpackFamily(int packedId) {
-        return (packedId >>> 16) & 0xFFFF;
-    }
-
-    public static int unpackType(int packedId) {
         return packedId & 0xFFFF;
     }
 
-    public static int pack(int familyId, int typeId) {
-        return (familyId << 16) | (typeId & 0xFFFF);
+    public static int unpackType(int packedId) {
+        return (packedId >>> 16) & 0xFFFF;
+    }
+
+    public static int pack(short type, short family) {
+        return ((type & 0xFFFF) << 16) | (family & 0xFFFF);
     }
 
     public void clear() {
