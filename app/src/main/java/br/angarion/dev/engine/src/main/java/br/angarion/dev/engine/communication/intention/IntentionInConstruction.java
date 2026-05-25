@@ -75,7 +75,7 @@ public final class IntentionInConstruction {
         return MBT.unpackFamily(getTypeId(src));
     }
 
-    public static final short getType(MemorySegment src) {
+    public static final short getUnpackedType(MemorySegment src) {
         return MBT.unpackType(getTypeId(src));
     }
 
