@@ -5,7 +5,6 @@ import br.angarion.dev.engine.communication.response.IR;
 import br.angarion.dev.engine.communication.response.IRInConstruction;
 import br.angarion.dev.engine.communication.response.IRPublisherSingleton;
 import br.angarion.dev.engine.communication.validator.ValidatorResponse;
-import br.angarion.dev.engine.communication.validator.ValidatorType;
 import br.angarion.dev.engine.runtime.ComponentResolver;
 import br.angarion.dev.engine.runtime.InnerProcessor;
 import br.angarion.dev.engine.communication.codec.DataLayout;
@@ -49,9 +48,9 @@ public class IntentionGateway implements ConnectionReceivedListener {
 
             MemorySegment ir = arena.allocate(totalSize);
 
-            if (validationResult.getType() == ValidatorType.ERROR) // validation invalid, publish IR and return
+            if (validationResult.getType() == IRInConstruction.INVALID) // validation invalid, publish IR and return
             {
-                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.INVALID, validationResult.getCode());
+                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.INVALID, validationResult.getErrorCode());
 
                 IRPublisherSingleton.get().publish(
                     ir,
@@ -61,9 +60,9 @@ public class IntentionGateway implements ConnectionReceivedListener {
                 return;
             }
 
-            else if (validationResult.getType() == ValidatorType.PARTIAL) // validation partial, publish IR and execute
+            else if (validationResult.getType() == IRInConstruction.PARTIAL) // validation partial, publish IR and execute
             {
-                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.PARTIAL, validationResult.getCode());
+                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.PARTIAL, validationResult.getErrorCode());
 
                 IRPublisherSingleton.get().publish(
                     ir,
@@ -76,9 +75,9 @@ public class IntentionGateway implements ConnectionReceivedListener {
                 }
             }
 
-            else if (validationResult.getType() == ValidatorType.SUCCESS) 
+            else if (validationResult.getType() == IRInConstruction.SUCCESS) 
             {
-                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.SUCCESS, validationResult.getCode());
+                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.SUCCESS, validationResult.getErrorCode());
 
                 IRPublisherSingleton.get().publish(
                     ir,
