@@ -15,6 +15,6 @@ public class EventPublisher {
 
     public void publish(MemorySegment event, TargetScope targetScope) {
         delivery.deliveryEvent(event, EventInConstruction.getOriginId(event), targetScope);
-        System.out.println("Published event. Family: " + EventInConstruction.getFamily(event) + ", Type: " + EventInConstruction.getType(event) + ", OriginId: " + EventInConstruction.getOriginId(event) + ", Target Size: " + targetScope.modifier.toArray().length);
+        System.out.println("Published event. Family: " + EventInConstruction.getFamily(event) + ", Type: " + EventInConstruction.getUnpackedType(event) + ", OriginId: " + EventInConstruction.getOriginId(event) + ", Target Size: " + targetScope.modifier.toArray().length);
     }
 }
