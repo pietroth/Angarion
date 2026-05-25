@@ -1,13 +1,12 @@
 package br.angarion.dev.engine.network.protocol;
 
+import br.angarion.dev.engine.communication.DataLayout;
 import br.angarion.dev.engine.communication.intention.IntentionInConstruction;
-import br.angarion.dev.engine.communication.response.IR;
 import br.angarion.dev.engine.communication.response.IRInConstruction;
 import br.angarion.dev.engine.communication.response.IRPublisherSingleton;
 import br.angarion.dev.engine.communication.validator.ValidatorResponse;
 import br.angarion.dev.engine.runtime.ComponentResolver;
 import br.angarion.dev.engine.runtime.InnerProcessor;
-import br.angarion.dev.engine.communication.codec.DataLayout;
 import br.angarion.dev.engine.network.transport.ConnectionReceivedListener;
 import br.angarion.dev.engine.network.transport.Connection;
 
