@@ -10,8 +10,8 @@ import java.lang.invoke.VarHandle;
 import br.angarion.dev.engine.communication.BaseProtocol;
 import br.angarion.dev.engine.communication.MBT;
 
-public final class EventInConstruction {
-    private EventInConstruction(){}
+public final class Event {
+    private Event(){}
 
     /*
         What is the origin ID? 
