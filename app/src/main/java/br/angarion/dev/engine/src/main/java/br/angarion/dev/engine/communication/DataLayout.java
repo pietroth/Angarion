@@ -1,4 +1,4 @@
-package br.angarion.dev.engine.communication.codec;
+package br.angarion.dev.engine.communication;
 
 import java.lang.foreign.MemorySegment;
 
