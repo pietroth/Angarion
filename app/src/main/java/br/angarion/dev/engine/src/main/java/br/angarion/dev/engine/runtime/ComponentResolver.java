@@ -9,24 +9,15 @@ public final class ComponentResolver {
     private final InnerProcessor[] processors = new InnerProcessor[4096];
 
     public <T extends DataLayout> void register(
-        int family,
-        int type,
+        int id,
         Validator<T> validator,
         UseCase<T> useCase
     )
     {
-        processors[pack(family, type)] = new InnerProcessor<>(validator, useCase);
+        processors[id] = new InnerProcessor<>(validator, useCase);
     }
 
-    public InnerProcessor<?> lookup(int family, int type) {
-        return processors[pack(family, type)];
+    public InnerProcessor<?> lookup(int id) {
+        return processors[id];
     }
-
-    private static int pack(int family, int type) {
-        if ((family & ~0x3F) != 0 || (type & ~0x3F) != 0) {
-            throw new IllegalArgumentException("family/type out of range");
-        }
-        return ((family & 0x3F) << 6) | (type & 0x3F);
-    }
-
 }
