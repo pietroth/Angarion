@@ -10,8 +10,8 @@ import java.lang.invoke.VarHandle;
 import br.angarion.dev.engine.communication.BaseProtocol;
 import br.angarion.dev.engine.communication.MBT;
 
-public final class IntentionInConstruction {
-    private IntentionInConstruction(){}
+public final class Intention {
+    private Intention(){}
     
     /*
         What's correlation Id? 

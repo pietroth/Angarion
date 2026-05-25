@@ -27,8 +27,8 @@ import javax.tools.Diagnostic;
 import br.angarion.dev.api.communication.DataField;
 import br.angarion.dev.api.communication.FamilyConfiguration;
 import br.angarion.dev.api.communication.TypeConfiguration;
+import br.angarion.dev.engine.communication.DataLayout;
 import br.angarion.dev.engine.communication.IdentifierGlossary;
-import br.angarion.dev.engine.communication.codec.DataLayout;
 import br.angarion.dev.engine.communication.validator.Validator;
 import br.angarion.dev.engine.usecase.UseCase;
 

@@ -1,6 +1,6 @@
 package br.angarion.dev.engine.runtime;
 
-import br.angarion.dev.engine.communication.codec.DataLayout;
+import br.angarion.dev.engine.communication.DataLayout;
 import br.angarion.dev.engine.communication.validator.Validator;
 import br.angarion.dev.engine.usecase.UseCase;
 

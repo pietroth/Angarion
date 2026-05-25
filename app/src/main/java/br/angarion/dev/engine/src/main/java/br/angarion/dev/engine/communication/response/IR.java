@@ -9,8 +9,8 @@ import java.lang.invoke.VarHandle;
 
 import br.angarion.dev.engine.communication.BaseProtocol;
 
-public final class IRInConstruction {
-    private IRInConstruction(){}
+public final class IR {
+    private IR(){}
 
     public static final int SUCCESS = 0;
     public static final int PARTIAL = 1;
