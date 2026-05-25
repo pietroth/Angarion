@@ -1,7 +1,7 @@
 package br.angarion.dev.engine.network.protocol;
 
 import br.angarion.dev.engine.communication.DataLayout;
-import br.angarion.dev.engine.communication.intention.IntentionInConstruction;
+import br.angarion.dev.engine.communication.intention.Intention;
 import br.angarion.dev.engine.communication.response.IR;
 import br.angarion.dev.engine.communication.response.IRPublisherSingleton;
 import br.angarion.dev.engine.communication.validator.ValidatorResponse;
@@ -24,7 +24,7 @@ public class IntentionGateway implements ConnectionReceivedListener {
     @Override
     public void onConnectionReceived(Connection connection, MemorySegment segment) {
         System.out.println("Received intention. OriginId: " + connection.getId() + ", Size: " + segment.byteSize());
-        int id = IntentionInConstruction.getTypeId(segment);
+        int id = Intention.getTypeId(segment);
         InnerProcessor<?> processor = processingPipeline.lookup(id);
 
         if (processor == null) 
@@ -36,14 +36,14 @@ public class IntentionGateway implements ConnectionReceivedListener {
     private <T extends DataLayout> void processIntention(InnerProcessor<T> processor, Connection connection, MemorySegment intention) {
         try (Arena arena = Arena.ofConfined()) {
             ValidatorResponse validationResult = processor.validator().validate(intention);
-            MemorySegment intentionPayload = IntentionInConstruction.payloadSlice(intention);
+            MemorySegment intentionPayload = Intention.payloadSlice(intention);
 
             MemorySegment data = validationResult.getData();
             int payloadSize = (data == null || data == MemorySegment.NULL) ? 0 : (int) data.byteSize();
             int totalSize = (int) IR.HEADER_SIZE + payloadSize;
 
-            int correlationId = IntentionInConstruction.getCorrelationId(intention);
-            int originId = IntentionInConstruction.getOriginId(intention);
+            int correlationId = Intention.getCorrelationId(intention);
+            int originId = Intention.getOriginId(intention);
 
             MemorySegment ir = arena.allocate(totalSize);
 
