@@ -2,6 +2,7 @@ package br.angarion.dev.engine.network.protocol;
 
 import br.angarion.dev.engine.communication.intention.IntentionInConstruction;
 import br.angarion.dev.engine.communication.response.IR;
+import br.angarion.dev.engine.communication.response.IRInConstruction;
 import br.angarion.dev.engine.communication.response.IRPublisherSingleton;
 import br.angarion.dev.engine.communication.validator.ValidatorResponse;
 import br.angarion.dev.engine.communication.validator.ValidatorType;
@@ -11,6 +12,7 @@ import br.angarion.dev.engine.communication.codec.DataLayout;
 import br.angarion.dev.engine.network.transport.ConnectionReceivedListener;
 import br.angarion.dev.engine.network.transport.Connection;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 
@@ -31,45 +33,62 @@ public class IntentionGateway implements ConnectionReceivedListener {
             throw new IllegalStateException("No processor found for intention id " + id);
 
         processIntention(processor, connection, segment);
-        System.out.println("Processed intention. Id: " + id + ", OriginId: " + connection.getId());
     }
 
     private <T extends DataLayout> void processIntention(InnerProcessor<T> processor, Connection connection, MemorySegment intention) {
-        ValidatorResponse validationResult = processor.validator().validate(intention);
-        MemorySegment intentionPayload = IntentionInConstruction.payloadSlice(intention);
+        try (Arena arena = Arena.ofConfined()) {
+            ValidatorResponse validationResult = processor.validator().validate(intention);
+            MemorySegment intentionPayload = IntentionInConstruction.payloadSlice(intention);
 
-        if (validationResult.getType() == ValidatorType.ERROR) // validation failed, publish IR and return
-        {
-            IRPublisherSingleton.get().publish(new IR.Builder()
-                .error(IntentionInConstruction.getCorrelationId(intention), (byte) IR.ERROR, validationResult.getCode())
-                .build(),
-                IntentionInConstruction.getOriginId(intention)
-            );
-            System.out.println("IR published (Error): Correlation Id: " + IntentionInConstruction.getCorrelationId(intention));
-            return;
-        }
+            MemorySegment data = validationResult.getData();
+            int payloadSize = (data == null || data == MemorySegment.NULL) ? 0 : (int) data.byteSize();
+            int totalSize = (int) IRInConstruction.HEADER_SIZE + payloadSize;
 
-        else if (validationResult.getType() == ValidatorType.PARTIAL) // validation partial, publish IR and execute
-        {
-            IRPublisherSingleton.get().publish(new IR.Builder()
-                .partial(IntentionInConstruction.getCorrelationId(intention), (byte) IR.PARTIAL, validationResult.getData())
-                .build(),
-                IntentionInConstruction.getOriginId(intention)
-            );
-            System.out.println("IR published (Partial): Correlation Id: " + IntentionInConstruction.getCorrelationId(intention) + "; Data: " + validationResult.getData().toArray(ValueLayout.JAVA_BYTE));
+            int correlationId = IntentionInConstruction.getCorrelationId(intention);
+            int originId = IntentionInConstruction.getOriginId(intention);
 
-            if (validationResult.getData() != null && validationResult.getData() != MemorySegment.NULL) {
-                intentionPayload = validationResult.getData();
+            MemorySegment ir = arena.allocate(totalSize);
+
+            if (validationResult.getType() == ValidatorType.ERROR) // validation invalid, publish IR and return
+            {
+                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.INVALID, validationResult.getCode());
+
+                IRPublisherSingleton.get().publish(
+                    ir,
+                    originId
+                );
+                System.out.println("IR published (Error): Correlation Id: " + correlationId);
+                return;
             }
+
+            else if (validationResult.getType() == ValidatorType.PARTIAL) // validation partial, publish IR and execute
+            {
+                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.PARTIAL, validationResult.getCode());
+
+                IRPublisherSingleton.get().publish(
+                    ir,
+                    originId
+                );
+                System.out.println("IR published (Partial): Correlation Id: " + correlationId + "; Data: " + data.toArray(ValueLayout.JAVA_BYTE));
+
+                if (data != null && data != MemorySegment.NULL) {
+                    intentionPayload = data;
+                }
+            }
+
+            else if (validationResult.getType() == ValidatorType.SUCCESS) 
+            {
+                IRInConstruction.writeHeader(ir, totalSize, correlationId, IRInConstruction.SUCCESS, validationResult.getCode());
+
+                IRPublisherSingleton.get().publish(
+                    ir,
+                    originId
+                );
+
+                System.out.println("IR published (Success): Correlation Id: " + correlationId);
+            }
+
+            processor.useCase().execute(originId, intentionPayload);
         }
-
-        processor.useCase().execute(IntentionInConstruction.getOriginId(intention), intentionPayload);
-
-        IRPublisherSingleton.get().publish(new IR.Builder()
-            .success(IntentionInConstruction.getCorrelationId(intention), (byte) 0)
-            .build(), 
-            IntentionInConstruction.getOriginId(intention));
-
-        System.out.println("IR published (Success): Correlation Id: " + IntentionInConstruction.getCorrelationId(intention));
     }
 }

@@ -28,7 +28,7 @@ import br.angarion.dev.api.communication.DataField;
 import br.angarion.dev.api.communication.FamilyConfiguration;
 import br.angarion.dev.api.communication.TypeConfiguration;
 import br.angarion.dev.engine.communication.IdentifierGlossary;
-import br.angarion.dev.engine.communication.codec.Codec;
+import br.angarion.dev.engine.communication.codec.DataLayout;
 import br.angarion.dev.engine.communication.validator.Validator;
 import br.angarion.dev.engine.usecase.UseCase;
 
@@ -109,11 +109,11 @@ public class AngarionCompiler extends AbstractProcessor {
             }
 
             /*
-                begin Codec Builder
+                begin DataLayout Builder
             */
-            TypeSpec.Builder codecBuilder = TypeSpec.classBuilder(configuration.name() + "$C")
+            TypeSpec.Builder dataLayoutBuilder = TypeSpec.classBuilder(configuration.name() + "$DL")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addSuperinterface(Codec.class);
+                .addSuperinterface(DataLayout.class);
             
             // end Codec Builder
 
@@ -150,7 +150,7 @@ public class AngarionCompiler extends AbstractProcessor {
                     /*
                         For each field marked as @DataField, create and add a field in codecBuilder
                     */
-                    codecBuilder.addField(FieldSpec.builder(TypeName.get(enclosed.asType()), enclosed.getSimpleName().toString())
+                    dataLayoutBuilder.addField(FieldSpec.builder(TypeName.get(enclosed.asType()), enclosed.getSimpleName().toString())
                         .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                         .build()
                     );

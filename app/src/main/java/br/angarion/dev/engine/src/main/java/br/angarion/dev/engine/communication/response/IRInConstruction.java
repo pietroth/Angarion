@@ -11,6 +11,10 @@ import br.angarion.dev.engine.communication.BaseProtocol;
 
 public final class IRInConstruction {
     private IRInConstruction(){}
+
+    public static final int SUCCESS = 0;
+    public static final int PARTIAL = 1;
+    public static final int INVALID = 2;
     
     /*
         What's correlation Id? 
