@@ -27,7 +27,7 @@ public class ValidatorResponse {
         return new ValidatorResponse(IR.PARTIAL, errorCode, segment);
     }
 
-    public int getType() {
+    public int getStatus() {
         return status;
     }
 
