@@ -12,7 +12,6 @@ import br.angarion.dev.engine.network.transport.Connection;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.lang.foreign.ValueLayout;
 
 public class IntentionGateway implements ConnectionReceivedListener {
     private final ComponentResolver processingPipeline;
@@ -24,6 +23,9 @@ public class IntentionGateway implements ConnectionReceivedListener {
     @Override
     public void onConnectionReceived(Connection connection, MemorySegment segment) {
         System.out.println("Received intention. OriginId: " + connection.getId() + ", Size: " + segment.byteSize());
+
+        if (segment.byteSize() <= Intention.HEADER_SIZE) return;
+
         int id = Intention.getTypeId(segment);
         InnerProcessor<?> processor = processingPipeline.lookup(id);
 

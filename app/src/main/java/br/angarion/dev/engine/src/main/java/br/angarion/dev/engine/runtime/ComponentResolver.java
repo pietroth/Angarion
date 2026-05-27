@@ -3,10 +3,10 @@ package br.angarion.dev.engine.runtime;
 import br.angarion.dev.engine.communication.DataLayout;
 import br.angarion.dev.engine.communication.validator.Validator;
 import br.angarion.dev.engine.usecase.UseCase;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-@SuppressWarnings("rawtypes")
 public final class ComponentResolver {
-    private final InnerProcessor[] processors = new InnerProcessor[4096];
+    private Int2ObjectOpenHashMap<InnerProcessor<?>> processors = new Int2ObjectOpenHashMap<>();
 
     public <T extends DataLayout> void register(
         int id,
@@ -14,10 +14,10 @@ public final class ComponentResolver {
         UseCase<T> useCase
     )
     {
-        processors[id] = new InnerProcessor<>(validator, useCase);
+        processors.put(id, new InnerProcessor<T>(validator, useCase));
     }
 
     public InnerProcessor<?> lookup(int id) {
-        return processors[id];
+        return processors.get(id);
     }
 }
