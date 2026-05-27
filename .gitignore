@@ -1,0 +1,40 @@
+# Gradle
+.gradle/
+
+# Build outputs
+build/
+**/build/
+bin/
+**/bin/
+out/
+**/out/
+target/
+**/target/
+
+# Java / JVM artifacts
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.jmod
+*.hprof
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+hs_err_pid*
+replay_pid*
+
+# IDE / editor
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

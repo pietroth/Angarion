@@ -1,8 +1,0 @@
-plugins {
-    id 'java'
-}
-
-dependencies {
-    implementation project(":api")
-    implementation 'it.unimi.dsi:fastutil:8.5.18'
-}
