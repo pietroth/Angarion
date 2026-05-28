@@ -13,14 +13,14 @@ public class MessageDeliveryHandler {
         this.clientLCManager = clientLCManager;
     }
 
-    public void deliveryEvent(MemorySegment segment, int removedId, TargetScope target) {
+    public void deliveryEvent(MemorySegment segment, TargetScope target) {
         if (target.forAllClients) {
             clientLCManager.sendToAll(segment);
             return;
         }
 
         TargetModifier modifier = target.modifier;
-        clientLCManager.sendTo(modifier.exclude(removedId).toArray(), segment);
+        clientLCManager.sendTo(modifier.toArray(), segment);
     }
 
     public void deliveryIr(MemorySegment segment, int targetId) {
