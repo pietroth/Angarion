@@ -24,6 +24,6 @@ public class MessageDeliveryHandler {
     }
 
     public void deliveryIr(MemorySegment segment, int targetId) {
-        clientLCManager.sendTo(new int[] { targetId }, segment);
+        clientLCManager.sendTo(targetId, segment);
     }
 }
