@@ -40,6 +40,7 @@ public class IntentionGateway implements ConnectionReceivedListener {
 
             ValidatorResponse validationResult = processor.validator().validate(intention);
             int validationStatus = validationResult.getStatus();
+            int errorCode = validationResult.getErrorCode();
 
             MemorySegment validationData = validationResult.getData();
             boolean hasData = (validationData != null || validationData != MemorySegment.NULL);
@@ -50,7 +51,7 @@ public class IntentionGateway implements ConnectionReceivedListener {
             int originId = Intention.getOriginId(intention);
 
             MemorySegment ir = arena.allocate(totalSize);
-            IR.writeHeader(ir, totalSize, correlationId, validationStatus, originId);
+            IR.writeHeader(ir, totalSize, correlationId, validationStatus, errorCode);
 
             if (payloadSize > 0) {
                 ir.asSlice(IR.HEADER_SIZE, payloadSize).copyFrom(validationData);
