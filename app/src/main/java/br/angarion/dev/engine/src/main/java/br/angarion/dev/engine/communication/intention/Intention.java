@@ -6,6 +6,7 @@ import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
 
 import br.angarion.dev.engine.communication.BaseProtocol;
 import br.angarion.dev.engine.communication.MBT;
@@ -26,8 +27,8 @@ public final class Intention {
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
         BaseProtocol.LAYOUT.withName("protocol"), // 4 bytes (1 int)
         MBT.LAYOUT.withName("mbt"), // 4 bytes (1 int)
-        ValueLayout.JAVA_INT.withName("originId"),
-        ValueLayout.JAVA_INT.withName("correlationId")
+        ValueLayout.JAVA_INT.withName("originId").withOrder(ByteOrder.BIG_ENDIAN),
+        ValueLayout.JAVA_INT.withName("correlationId").withOrder(ByteOrder.BIG_ENDIAN)
     ).withByteAlignment(8);
 
     private static final VarHandle CORRELATION_ID = 

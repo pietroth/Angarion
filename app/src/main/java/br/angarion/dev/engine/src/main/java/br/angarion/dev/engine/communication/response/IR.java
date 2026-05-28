@@ -6,6 +6,7 @@ import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
 
 import br.angarion.dev.engine.communication.BaseProtocol;
 
@@ -23,9 +24,9 @@ public final class IR {
 
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
         BaseProtocol.LAYOUT.withName("protocol"), // 4 bytes (1 int)
-        ValueLayout.JAVA_INT.withName("correlationId"),
-        ValueLayout.JAVA_SHORT.withName("errorCode"),
-        ValueLayout.JAVA_BYTE.withName("status")
+        ValueLayout.JAVA_INT.withName("correlationId").withOrder(ByteOrder.BIG_ENDIAN),
+        ValueLayout.JAVA_SHORT.withName("errorCode").withOrder(ByteOrder.BIG_ENDIAN),
+        ValueLayout.JAVA_BYTE.withName("status").withOrder(ByteOrder.BIG_ENDIAN)
     ).withByteAlignment(8);
 
     private static final VarHandle STATUS = 

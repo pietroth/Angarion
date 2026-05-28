@@ -12,6 +12,7 @@ import br.angarion.dev.engine.network.transport.Connection;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.util.logging.Logger;
 
 public class IntentionGateway implements ConnectionReceivedListener {
     private final ComponentResolver processingPipeline;
@@ -29,8 +30,10 @@ public class IntentionGateway implements ConnectionReceivedListener {
         int id = Intention.getTypeId(segment);
         InnerProcessor<?> processor = processingPipeline.lookup(id);
 
-        if (processor == null) 
-            throw new IllegalStateException("No processor found for intention id " + id);
+        if (processor == null) {
+            System.out.println("No processor found for intention with TypeId: " + id);
+            return;
+        }
 
         processIntention(processor, connection, segment);
     }
@@ -43,7 +46,7 @@ public class IntentionGateway implements ConnectionReceivedListener {
             int errorCode = validationResult.getErrorCode();
 
             MemorySegment validationData = validationResult.getData();
-            boolean hasData = (validationData != null || validationData != MemorySegment.NULL);
+            boolean hasData = (validationData != null && validationData != MemorySegment.NULL);
             int payloadSize = hasData ? (int) validationData.byteSize() : 0;
             int totalSize = (int) IR.HEADER_SIZE + payloadSize;
 
