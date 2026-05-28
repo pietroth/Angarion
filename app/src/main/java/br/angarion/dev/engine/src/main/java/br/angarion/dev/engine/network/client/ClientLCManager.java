@@ -36,7 +36,7 @@ public class ClientLCManager implements ConnectionCreatedListener {
     }
 
     @Override
-    public synchronized void onConnectionCreated(Connection connection) {
+    public void onConnectionCreated(Connection connection) {
         if (freeIds.isEmpty()) {
             throw new IllegalStateException("No available client IDs. Maximum number of clients reached: " + maxClients);
         }
@@ -74,7 +74,7 @@ public class ClientLCManager implements ConnectionCreatedListener {
         return clients[id];
     }
 
-    public synchronized int onlineCount() {
+    public int onlineCount() {
         int count = 0;
         for (Client client : clients) {
             if (client != null) {
@@ -84,7 +84,7 @@ public class ClientLCManager implements ConnectionCreatedListener {
         return count;
     }
 
-    public synchronized void forEachOnline(ClientConsumer consumer) {
+    public void forEachOnline(ClientConsumer consumer) {
         for (Client client : clients) {
             if (client != null) {
                 consumer.accept(client.getId());
@@ -92,7 +92,7 @@ public class ClientLCManager implements ConnectionCreatedListener {
         }
     }
 
-    public synchronized void disconnectClient(int id) {
+    public void disconnectClient(int id) {
         if (id >= 0 && id < maxClients && clients[id] != null) {
             clients[id] = null;
             freeIds.push(id);
