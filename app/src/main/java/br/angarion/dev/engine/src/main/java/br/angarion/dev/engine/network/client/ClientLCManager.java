@@ -17,17 +17,18 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 // LC = LifeCycle
 
 public class ClientLCManager implements ConnectionCreatedListener {
-    private final Client[] clients;
+    private final ObjectList<Client> clients;
     private final IntStack freeIds; 
     private final IntentionGateway intentionGateway;
     public final int maxClients;
 
-    private final ObjectList<ConnectionProcessedListener> listeners = new ObjectArrayList<>();
+    private final ObjectList<ConnectionProcessedListener> listeners;
 
     public ClientLCManager(int maxClients, IntentionGateway intentionGateway) {
         this.intentionGateway = intentionGateway;
         this.maxClients = maxClients;
-        this.clients = new Client[maxClients];
+        this.clients = new ObjectArrayList<>();
+        this.listeners = new ObjectArrayList<>();
 
         this.freeIds = new IntArrayList(maxClients);
         for (int i = maxClients - 1; i >= 0; i--) {
@@ -38,7 +39,8 @@ public class ClientLCManager implements ConnectionCreatedListener {
     @Override
     public void onConnectionCreated(Connection connection) {
         if (freeIds.isEmpty()) {
-            throw new IllegalStateException("No available client IDs. Maximum number of clients reached: " + maxClients);
+            System.out.println("Connection from " + connection.getId() + " rejected: server is full.");
+            return;
         }
 
         int id = freeIds.popInt();
@@ -57,21 +59,25 @@ public class ClientLCManager implements ConnectionCreatedListener {
 
         client.getConnection().subscribe(intentionGateway);
 
-        clients[id] = client;
+        while (clients.size() <= id) {
+            clients.add(null);
+        }
+        clients.set(id, client);
+
         notifyConnectionProcessed(connection);
     }
 
     public boolean isConnected(int id) {
-        return id >= 0 && id < maxClients && clients[id] != null;
+        return id >= 0 && id < clients.size() && clients.get(id) != null;
     }
 
-    public Client[] getClients() {
+    public ObjectList<Client> getClients() {
         return clients;
     }
 
     public Client getClientById(int id) {
-        if (id < 0 || id >= maxClients) return null;
-        return clients[id];
+        if (id < 0 || id >= clients.size()) return null;
+        return clients.get(id);
     }
 
     public int onlineCount() {
@@ -93,8 +99,8 @@ public class ClientLCManager implements ConnectionCreatedListener {
     }
 
     public void disconnectClient(int id) {
-        if (id >= 0 && id < maxClients && clients[id] != null) {
-            clients[id] = null;
+        if (id >= 0 && id < clients.size() && clients.get(id) != null) {
+            clients.set(id, null);
             freeIds.push(id);
         }
     }
@@ -115,8 +121,9 @@ public class ClientLCManager implements ConnectionCreatedListener {
     }
 
     public void sendToAll(MemorySegment segment) {
-        for (int i = 0; i < maxClients; i++) {
-            Client client = clients[i];
+        int size = clients.size();
+        for (int i = 0; i < size; i++) {
+            Client client = clients.get(i);
             if (client != null) {
                 sendTo(client, segment);
             }
