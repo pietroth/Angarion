@@ -12,5 +12,4 @@ public interface Connection {
     void unsubscribe(ConnectionReceivedListener listener);
     void setId(int id);
     int getId();
-    OutputStream getOutputStream();
 }
