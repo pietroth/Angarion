@@ -19,7 +19,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 public class ClientLCManager implements ConnectionCreatedListener {
     private final Client[] clients;
     private final IntStack freeIds; 
-    private IntentionGateway intentionGateway;
+    private final IntentionGateway intentionGateway;
     public final int maxClients;
 
     private final ObjectList<ConnectionProcessedListener> listeners = new ObjectArrayList<>();
