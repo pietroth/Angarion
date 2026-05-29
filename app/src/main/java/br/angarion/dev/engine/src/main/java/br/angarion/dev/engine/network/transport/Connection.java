@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
-public interface Connection extends Runnable {
+public interface Connection {
     MemorySegment read(Arena arena) throws IOException;
     void send(MemorySegment segment) throws IOException;
     void subscribe(ConnectionReceivedListener listener);
