@@ -4,9 +4,9 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 
 import br.angarion.dev.api.network.ClientConsumer;
-import br.angarion.dev.engine.network.transport.ConnectionCreatedListener;
-import br.angarion.dev.engine.network.transport.Connection;
-import br.angarion.dev.engine.network.protocol.ConnectionProcessedListener;
+import br.angarion.dev.engine.network.transport.Channel;
+import br.angarion.dev.engine.network.transport.ChannelCreatedListener;
+import br.angarion.dev.engine.network.protocol.ChannelProcessedListener;
 import br.angarion.dev.engine.network.NetworkAggregatorSingleton;
 import br.angarion.dev.engine.network.protocol.IntentionGateway;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -16,13 +16,13 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 
 // LC = LifeCycle
 
-public class ClientLCManager implements ConnectionCreatedListener {
+public class ClientLCManager implements ChannelCreatedListener {
     private final ObjectList<Client> clients;
     private final IntStack freeIds; 
     private final IntentionGateway intentionGateway;
     public final int maxClients;
 
-    private final ObjectList<ConnectionProcessedListener> listeners;
+    private final ObjectList<ChannelProcessedListener> listeners;
 
     public ClientLCManager(int maxClients, IntentionGateway intentionGateway) {
         this.intentionGateway = intentionGateway;
@@ -37,34 +37,34 @@ public class ClientLCManager implements ConnectionCreatedListener {
     }
 
     @Override
-    public void onConnectionCreated(Connection connection) {
+    public void onChannelCreated(Channel channel) {
         if (freeIds.isEmpty()) {
-            System.out.println("Connection from " + connection.getId() + " rejected: server is full.");
+            System.out.println("Channel from " + channel.getId() + " rejected: server is full.");
             return;
         }
 
         int id = freeIds.popInt();
 
-        System.out.println(connection.getId() + " connected. Assigned client ID: " + id);
-        System.out.println("New connection created with ID: " + id);
+        System.out.println(channel.getId() + " connected. Assigned client ID: " + id);
+        System.out.println("New channel created with ID: " + id);
         
-        connection.setId(id); // This links created Id with connection Id; Don't remove it!
+        channel.setId(id); // This links created Id with channel Id; Don't remove it!
 
-        System.out.println("New Id linked to connection: " + connection.getId());
+        System.out.println("New Id linked to channel: " + channel.getId());
 
         Client client = new Client.Builder()
                 .id(id)
-                .connection(connection)
+                .channel(channel)
                 .build();
 
-        client.getConnection().subscribe(intentionGateway);
+        client.getChannel().subscribe(intentionGateway);
 
         while (clients.size() <= id) {
             clients.add(null);
         }
         clients.set(id, client);
 
-        notifyConnectionProcessed(connection);
+        notifyChannelProcessed(channel);
     }
 
     public boolean isConnected(int id) {
@@ -134,17 +134,17 @@ public class ClientLCManager implements ConnectionCreatedListener {
         NetworkAggregatorSingleton.get().append(client.getId(), segment.toArray(ValueLayout.JAVA_BYTE));
     }
 
-    public void subscribe(ConnectionProcessedListener listener) {
+    public void subscribe(ChannelProcessedListener listener) {
         listeners.add(listener);
     }
 
-    public void unsubscribe(ConnectionProcessedListener listener) {
+    public void unsubscribe(ChannelProcessedListener listener) {
         listeners.remove(listener);
     }
 
-    public void notifyConnectionProcessed(Connection connection) {
-        for (ConnectionProcessedListener listener : listeners) {
-            listener.onConnectionProcessed(connection);
+    public void notifyChannelProcessed(Channel channel) {
+        for (ChannelProcessedListener listener : listeners) {
+            listener.onChannelProcessed(channel);
         }
     }
 }

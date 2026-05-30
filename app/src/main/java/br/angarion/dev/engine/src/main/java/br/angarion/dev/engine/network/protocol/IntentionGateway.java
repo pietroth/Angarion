@@ -7,14 +7,13 @@ import br.angarion.dev.engine.communication.response.IRPublisherSingleton;
 import br.angarion.dev.engine.communication.validator.ValidatorResponse;
 import br.angarion.dev.engine.runtime.ComponentResolver;
 import br.angarion.dev.engine.runtime.InnerProcessor;
-import br.angarion.dev.engine.network.transport.ConnectionReceivedListener;
-import br.angarion.dev.engine.network.transport.Connection;
+import br.angarion.dev.engine.network.transport.Channel;
+import br.angarion.dev.engine.network.transport.MessageReceivedListener;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
-import java.util.logging.Logger;
 
-public class IntentionGateway implements ConnectionReceivedListener {
+public class IntentionGateway implements MessageReceivedListener {
     private final ComponentResolver processingPipeline;
 
     public IntentionGateway(ComponentResolver processingPipeline) {
@@ -22,8 +21,8 @@ public class IntentionGateway implements ConnectionReceivedListener {
     }
 
     @Override
-    public void onConnectionReceived(Connection connection, MemorySegment segment) {
-        System.out.println("Received intention. OriginId: " + connection.getId() + ", Size: " + segment.byteSize());
+    public void onMessageReceived(Channel channel, MemorySegment segment) {
+        System.out.println("Received intention. OriginId: " + channel.getId() + ", Size: " + segment.byteSize());
 
         if (segment.byteSize() <= Intention.HEADER_SIZE) return;
 
@@ -35,10 +34,10 @@ public class IntentionGateway implements ConnectionReceivedListener {
             return;
         }
 
-        processIntention(processor, connection, segment);
+        processIntention(processor, channel, segment);
     }
 
-    private <T extends DataLayout> void processIntention(InnerProcessor<T> processor, Connection connection, MemorySegment intention) {
+    private <T extends DataLayout> void processIntention(InnerProcessor<T> processor, Channel channel, MemorySegment intention) {
         try (Arena arena = Arena.ofConfined()) {
 
             ValidatorResponse validationResult = processor.validator().validate(intention);

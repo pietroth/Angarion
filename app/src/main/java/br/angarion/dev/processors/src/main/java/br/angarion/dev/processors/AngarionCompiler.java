@@ -6,7 +6,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -32,7 +31,6 @@ import br.angarion.dev.engine.communication.validator.Validator;
 import br.angarion.dev.engine.usecase.UseCase;
 
 @AutoService(Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_25)
 @SupportedAnnotationTypes({
         "br.angarion.dev.api.communication.FamilyConfiguration",
         "br.angarion.dev.api.communication.TypeConfiguration",
@@ -47,6 +45,11 @@ public class AngarionCompiler extends AbstractProcessor {
     private Elements elementUtils;
 
     public AngarionCompiler() {
+    }
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
     }
 
     @Override

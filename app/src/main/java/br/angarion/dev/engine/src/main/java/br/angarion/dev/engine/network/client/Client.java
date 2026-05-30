@@ -1,22 +1,22 @@
 package br.angarion.dev.engine.network.client;
 
-import br.angarion.dev.engine.network.transport.Connection;
+import br.angarion.dev.engine.network.transport.Channel;
 
 public class Client {
     private final int id;
-    private final Connection connection;
+    private final Channel channel;
 
     public Client(Builder builder) {
         this.id = builder.id;
-        this.connection = builder.connection;
+        this.channel = builder.channel;
     }
 
     public int getId() {
         return id;
     }
 
-    public Connection getConnection() {
-        return connection;
+    public Channel getChannel() {
+        return channel;
     }
 
     public static Builder builder() {
@@ -25,15 +25,15 @@ public class Client {
 
     public static class Builder {
         private int id;
-        private Connection connection;
+        private Channel channel;
 
         public Builder id(int id) {
             this.id = id;
             return this;
         }
 
-        public Builder connection(Connection connection) {
-            this.connection = connection;
+        public Builder channel(Channel channel) {
+            this.channel = channel;
             return this;
         }
 
