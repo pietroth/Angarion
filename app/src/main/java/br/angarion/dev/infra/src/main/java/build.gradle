@@ -1,0 +1,11 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation project(':engine')
+
+    implementation 'org.jctools:jctools-core:4.0.6'
+    implementation 'org.agrona:agrona:2.4.1'
+    implementation 'io.aeron:aeron-all:1.51.0'
+}

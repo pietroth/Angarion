@@ -20,10 +20,13 @@ rootProject.name = 'Angarion'
 include 'api'
 include 'engine'
 include 'processors'
+include 'infra'
 
 project(':api').projectDir = file('app/src/main/java/br/angarion/dev/api')
 project(':engine').projectDir = file('app/src/main/java/br/angarion/dev/engine')
 project(':processors').projectDir = file('app/src/main/java/br/angarion/dev/processors')
+project(':infra').projectDir = file('app/src/main/java/br/angarion/dev/infra')
 
 project(':engine').buildFileName = 'src/main/java/build.gradle'
 project(':processors').buildFileName = 'src/main/java/build.gradle'
+project(':infra').buildFileName = 'src/main/java/build.gradle'

@@ -26,6 +26,7 @@ sourceSets {
             exclude 'br/angarion/dev/api/**'
             exclude 'br/angarion/dev/engine/**'
             exclude 'br/angarion/dev/processors/**'
+            exclude 'br/angarion/dev/infra/**'
         }
     }
     test {
