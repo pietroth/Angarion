@@ -7,7 +7,7 @@ final class MpmcMemoryLender implements MemoryLender {
 
     private final MemorySegment rootSegment;
 
-    private final MpmcMemoryLender() {
+    private MpmcMemoryLender() {
         rootSegment = MemorySegment.NULL;
     }
 
