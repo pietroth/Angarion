@@ -23,10 +23,6 @@ sourceSets {
     main {
         java {
             srcDirs = ['app/src/main/java']
-            exclude 'br/angarion/dev/api/**'
-            exclude 'br/angarion/dev/engine/**'
-            exclude 'br/angarion/dev/processors/**'
-            exclude 'br/angarion/dev/infra/**'
         }
     }
     test {
@@ -34,11 +30,24 @@ sourceSets {
             srcDirs = ['app/src/test/java']
         }
     }
+    jmh {
+        java {
+            srcDirs = ['app/src/jmh/java']
+        }
+        resources {
+            srcDirs = ['app/src/jmh/resources']
+        }
+    }
 }
 
 dependencies {
     implementation project(':api')
     annotationProcessor project(':processors')
+
+    jmhImplementation project(':engine')
+    jmhImplementation project(':api')
+    jmhImplementation 'org.openjdk.jmh:jmh-core:1.37'
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -47,4 +56,22 @@ tasks.withType(JavaCompile).configureEach {
 
 application {
     mainClass.set('br.angarion.dev.App')
+}
+
+tasks.register('jmh', JavaExec) {
+    group = 'verification'
+    description = 'Runs the JMH benchmarks.'
+    classpath = sourceSets.jmh.runtimeClasspath
+    mainClass.set('org.openjdk.jmh.Main')
+    args(
+        'br.angarion.dev.benchmark.ResolverBenchmark',
+        '-bm', 'thrpt',
+        '-rf', 'text',
+        '-rff', "$buildDir/reports/jmh/ResolverBenchmark.txt"
+    )
+    jvmArgs '-Xms1g', '-Xmx1g'
+    dependsOn tasks.named('jmhClasses')
+    doFirst {
+        file("$buildDir/reports/jmh").mkdirs()
+    }
 }
