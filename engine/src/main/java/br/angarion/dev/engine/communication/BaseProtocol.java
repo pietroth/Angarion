@@ -2,6 +2,7 @@ package br.angarion.dev.engine.communication;
 
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
+import java.lang.foreign.MemorySegment;
 import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
@@ -22,4 +23,8 @@ public final class BaseProtocol {
     public static final VarHandle TOTAL_SIZE = LAYOUT.varHandle(
         PathElement.groupElement("totalSize")
     );
+
+    public static final int getTotalSize(MemorySegment src) {
+        return (int) TOTAL_SIZE.get(src, 0L);
+    }
 }
