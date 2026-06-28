@@ -1,52 +1,66 @@
 package br.angarion.dev.engine.communication.response;
 
+import br.angarion.dev.engine.communication.BaseProtocol;
 import java.lang.foreign.MemoryLayout;
+import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
-import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
 
-import br.angarion.dev.engine.communication.BaseProtocol;
-
 public final class IR {
-    private IR(){}
+
+    private IR() {}
 
     public static final int SUCCESS = 0;
     public static final int PARTIAL = 1;
     public static final int INVALID = 2;
-    
+
     /*
-        What's correlation Id? 
+        What's correlation Id?
         It's just the id that links the intentions with the IRs.
     */
 
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
         BaseProtocol.LAYOUT.withName("protocol"), // 4 bytes (1 int)
-        ValueLayout.JAVA_INT.withName("correlationId").withOrder(ByteOrder.BIG_ENDIAN),
-        ValueLayout.JAVA_SHORT.withName("errorCode").withOrder(ByteOrder.BIG_ENDIAN),
+        ValueLayout.JAVA_INT.withName("correlationId").withOrder(
+            ByteOrder.BIG_ENDIAN
+        ),
+        ValueLayout.JAVA_SHORT.withName("errorCode").withOrder(
+            ByteOrder.BIG_ENDIAN
+        ),
         ValueLayout.JAVA_BYTE.withName("status").withOrder(ByteOrder.BIG_ENDIAN)
     ).withByteAlignment(8);
 
-    private static final VarHandle STATUS = 
-        LAYOUT.varHandle(PathElement.groupElement("status"));
+    private static final VarHandle STATUS = LAYOUT.varHandle(
+        PathElement.groupElement("status")
+    );
 
-    private static final VarHandle ERROR_CODE = 
-        LAYOUT.varHandle(PathElement.groupElement("errorCode"));
+    private static final VarHandle ERROR_CODE = LAYOUT.varHandle(
+        PathElement.groupElement("errorCode")
+    );
 
-    private static final VarHandle PROTOCOL_TOTAL_SIZE = 
-        LAYOUT.varHandle(
-            PathElement.groupElement("protocol"),
-            PathElement.groupElement("totalSize")
-        );  
+    private static final VarHandle PROTOCOL_TOTAL_SIZE = LAYOUT.varHandle(
+        PathElement.groupElement("protocol"),
+        PathElement.groupElement("totalSize")
+    );
 
-    private static final VarHandle CORRELATION_ID = 
-        LAYOUT.varHandle(PathElement.groupElement("correlationId"));
+    private static final VarHandle CORRELATION_ID = LAYOUT.varHandle(
+        PathElement.groupElement("correlationId")
+    );
 
-    public static final void writeHeader(MemorySegment dest, int totalSize, int correlationId, int status, int errorCode) {
+    public static final void writeHeader(
+        MemorySegment dest,
+        int totalSize,
+        int correlationId,
+        int status,
+        int errorCode
+    ) {
         if (status > 2 || status < 0) {
-            throw new IllegalArgumentException("Status must be between 0 and 2");
+            throw new IllegalArgumentException(
+                "Status must be between 0 and 2"
+            );
         }
 
         PROTOCOL_TOTAL_SIZE.set(dest, 0L, totalSize);

@@ -27,23 +27,8 @@ public final class Event {
         )
     ).withByteAlignment(8);
 
-    private static final VarHandle PROTOCOL_TOTAL_SIZE = LAYOUT.varHandle(
-        PathElement.groupElement("protocol"),
-        PathElement.groupElement("totalSize")
-    );
-
     private static final VarHandle ORIGIN_ID = LAYOUT.varHandle(
         PathElement.groupElement("originId")
-    );
-
-    private static final VarHandle MBT_FAMILY = LAYOUT.varHandle(
-        PathElement.groupElement("mbt"),
-        PathElement.groupElement("family")
-    );
-
-    private static final VarHandle MBT_TYPE = LAYOUT.varHandle(
-        PathElement.groupElement("mbt"),
-        PathElement.groupElement("family")
     );
 
     public static final void writeHeader(
@@ -53,9 +38,9 @@ public final class Event {
         int totalSize,
         int originId
     ) {
-        PROTOCOL_TOTAL_SIZE.set(dest, 0L, totalSize);
-        MBT_FAMILY.set(dest, 0L, familyId);
-        MBT_TYPE.set(dest, 0L, typeId);
+        BaseProtocol.TOTAL_SIZE.set(dest, 0L, totalSize);
+        MBT.FAMILY.set(dest, 0L, familyId);
+        MBT.TYPE.set(dest, 0L, typeId);
         ORIGIN_ID.set(dest, 0L, originId);
     }
 
@@ -64,15 +49,15 @@ public final class Event {
     }
 
     public static final int getTotalSize(MemorySegment src) {
-        return (int) PROTOCOL_TOTAL_SIZE.get(src, 0L);
+        return (int) BaseProtocol.TOTAL_SIZE.get(src, 0L);
     }
 
     public static final int getFamily(MemorySegment src) {
-        return (int) MBT_FAMILY.get(src, 0L);
+        return (int) MBT.FAMILY.get(src, 0L);
     }
 
     public static final int getType(MemorySegment src) {
-        return (int) MBT_TYPE.get(src, 0L);
+        return (int) MBT.TYPE.get(src, 0L);
     }
 
     public static final long HEADER_SIZE = LAYOUT.byteSize();
