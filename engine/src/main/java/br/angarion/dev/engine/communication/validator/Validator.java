@@ -5,5 +5,5 @@ import java.lang.foreign.MemorySegment;
 
 @FunctionalInterface
 public interface Validator<T extends DataLayout> {
-    void validate(MemorySegment intention);
+    ValidationResult validate(MemorySegment intention);
 }

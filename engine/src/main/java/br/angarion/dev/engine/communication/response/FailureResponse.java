@@ -13,7 +13,7 @@ public final class FailureResponse {
 
     public static final void writeHeader(MemorySegment src, int correlationId) {
         Response.CORRELATION_ID.set(src, 0L, correlationId);
-        Response.STATUS.set(src, 0L, Response.APPROVED);
+        Response.STATUS.set(src, 0L, Response.FAILURE);
     }
 
     public static final int getStatus(MemorySegment src) {

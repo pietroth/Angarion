@@ -31,7 +31,7 @@ public final class PartiallyApprovedResponse {
         }
 
         Response.CORRELATION_ID.set(src, 0L, correlationId);
-        Response.STATUS.set(src, 0L, Response.DENIED);
+        Response.STATUS.set(src, 0L, Response.PARTIALLY_APPROVED);
         REASON_CODE.set(src, 0L, (short) errorCode);
     }
 
