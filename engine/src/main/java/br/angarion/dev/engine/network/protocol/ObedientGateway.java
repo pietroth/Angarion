@@ -2,8 +2,6 @@ package br.angarion.dev.engine.network.protocol;
 
 import br.angarion.dev.engine.communication.DataLayout;
 import br.angarion.dev.engine.communication.MBT;
-import br.angarion.dev.engine.communication.response.IR;
-import br.angarion.dev.engine.communication.validator.ValidatorResponse;
 import br.angarion.dev.engine.network.MessageDeliveryHandler;
 import br.angarion.dev.engine.network.transport.MessageReceivedListener;
 import br.angarion.dev.engine.runtime.ComponentResolver;
