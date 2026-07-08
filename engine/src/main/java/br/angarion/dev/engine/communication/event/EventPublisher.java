@@ -1,20 +1,33 @@
 package br.angarion.dev.engine.communication.event;
 
+import br.angarion.dev.api.communication.TargetModifier;
+import br.angarion.dev.api.communication.TargetScope;
+import br.angarion.dev.engine.network.MessageSender;
 import java.lang.foreign.MemorySegment;
 
-import br.angarion.dev.api.communication.TargetScope;
-import br.angarion.dev.engine.network.MessageDeliveryHandler;
-
 public class EventPublisher {
-    private final MessageDeliveryHandler delivery;
 
-    public EventPublisher(MessageDeliveryHandler delivery) {
-        this.delivery = delivery;
+    private final MessageSender messageSender;
 
+    public EventPublisher(MessageSender messageSender) {
+        this.messageSender = messageSender;
     }
 
     public void publish(MemorySegment event, TargetScope targetScope) {
-        delivery.deliveryEvent(event, targetScope);
-        System.out.println("Published event. Family: " + Event.getFamily(event) + ", Type: " + Event.getType(event) + ", OriginId: " + Event.getOriginId(event));
+        if (targetScope.forAllClients) {
+            messageSender.broadcast(event);
+            return;
+        }
+
+        TargetModifier modifier = targetScope.modifier;
+        messageSender.sendTo(modifier.toArray(), event);
+        System.out.println(
+            "Published event. Family: " +
+                Event.getFamily(event) +
+                ", Type: " +
+                Event.getType(event) +
+                ", OriginId: " +
+                Event.getOriginId(event)
+        );
     }
 }
