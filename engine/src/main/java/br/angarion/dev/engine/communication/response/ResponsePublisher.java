@@ -1,18 +1,18 @@
 package br.angarion.dev.engine.communication.response;
 
-import br.angarion.dev.engine.network.MessageDeliveryHandler;
+import br.angarion.dev.engine.network.MessageSender;
 import java.lang.foreign.MemorySegment;
 
 public final class ResponsePublisher {
 
-    private final MessageDeliveryHandler deliveryHandler;
+    private final MessageSender messageSender;
 
-    public ResponsePublisher(MessageDeliveryHandler deliveryHandler) {
-        this.deliveryHandler = deliveryHandler;
+    public ResponsePublisher(MessageSender messageSender) {
+        this.messageSender = messageSender;
     }
 
     public final void publish(MemorySegment response, int targetId) {
-        deliveryHandler.deliveryIr(response, targetId);
+        messageSender.sendTo(targetId, response);
         System.out.println("Response published.");
     }
 }
