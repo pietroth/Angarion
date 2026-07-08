@@ -22,17 +22,17 @@ public final class DeniedResponse {
     public static final void writeHeader(
         MemorySegment src,
         int correlationId,
-        int errorCode
+        int reasonCode
     ) {
-        if (errorCode < 0 || errorCode > 65.535) {
+        if (reasonCode < 0 || reasonCode > 65.535) {
             throw new IllegalArgumentException(
-                "errorCode must be between 0 and 65.535"
+                "reasonCode must be between 0 and 65.535"
             );
         }
 
         Response.CORRELATION_ID.set(src, 0L, correlationId);
         Response.STATUS.set(src, 0L, Response.DENIED);
-        REASON_CODE.set(src, 0L, (short) errorCode);
+        REASON_CODE.set(src, 0L, (short) reasonCode);
     }
 
     public static final int getStatus(MemorySegment src) {

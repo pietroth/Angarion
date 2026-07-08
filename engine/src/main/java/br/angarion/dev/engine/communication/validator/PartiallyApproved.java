@@ -1,9 +1,9 @@
 package br.angarion.dev.engine.communication.validator;
 
-import java.lang.foreign.MemorySegment;
+import br.angarion.dev.engine.communication.DataLayout;
 
 public record PartiallyApproved(
     int reasonCode,
     short payloadType,
-    MemorySegment payload
+    DataLayout payload
 ) implements ValidationResult {}

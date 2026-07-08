@@ -12,7 +12,8 @@ public final class PartiallyApprovedResponse {
 
     private static final MemoryLayout LAYOUT = MemoryLayout.structLayout(
         Response.LAYOUT.withName("base"), // 5 bytes (1 int, 1 byte)
-        ValueLayout.JAVA_SHORT.withName("reasonCode")
+        ValueLayout.JAVA_SHORT.withName("reasonCode"),
+        MemoryLayout.paddingLayout(1)
     ).withByteAlignment(4);
 
     private static final VarHandle REASON_CODE = LAYOUT.varHandle(
@@ -22,17 +23,17 @@ public final class PartiallyApprovedResponse {
     public static final void writeHeader(
         MemorySegment src,
         int correlationId,
-        int errorCode
+        int reasonCode
     ) {
-        if (errorCode < 0 || errorCode > 65.535) {
+        if (reasonCode < 0 || reasonCode > 65535) {
             throw new IllegalArgumentException(
-                "errorCode must be between 0 and 65.535"
+                "errorCode must be between 0 and 65535"
             );
         }
 
         Response.CORRELATION_ID.set(src, 0L, correlationId);
         Response.STATUS.set(src, 0L, Response.PARTIALLY_APPROVED);
-        REASON_CODE.set(src, 0L, (short) errorCode);
+        REASON_CODE.set(src, 0L, (short) reasonCode);
     }
 
     public static final int getStatus(MemorySegment src) {

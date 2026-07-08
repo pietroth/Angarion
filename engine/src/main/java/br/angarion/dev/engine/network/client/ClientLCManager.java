@@ -3,8 +3,11 @@ package br.angarion.dev.engine.network.client;
 import java.lang.foreign.MemorySegment;
 import java.util.function.Consumer;
 
-public interface ClientLCManager<T extends Client> extends ClientConnectedListener<T> {
-    void sendTo(int ids[], MemorySegment message);
+// LC means LifeCycle
+
+public interface ClientLCManager<T extends Client> extends
+    ClientConnectedListener<T> {
+    void sendTo(int[] ids, MemorySegment message);
     void sendTo(int id, MemorySegment message);
     void broadcast(MemorySegment message);
     void disconnectClient(int id);

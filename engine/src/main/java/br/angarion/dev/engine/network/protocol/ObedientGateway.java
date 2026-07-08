@@ -2,6 +2,15 @@ package br.angarion.dev.engine.network.protocol;
 
 import br.angarion.dev.engine.communication.DataLayout;
 import br.angarion.dev.engine.communication.MBT;
+import br.angarion.dev.engine.communication.intention.Intention;
+import br.angarion.dev.engine.communication.response.ApprovedResponse;
+import br.angarion.dev.engine.communication.response.DeniedResponse;
+import br.angarion.dev.engine.communication.response.PartiallyApprovedResponse;
+import br.angarion.dev.engine.communication.response.ResponsePublisherSingleton;
+import br.angarion.dev.engine.communication.validator.Approved;
+import br.angarion.dev.engine.communication.validator.Denied;
+import br.angarion.dev.engine.communication.validator.PartiallyApproved;
+import br.angarion.dev.engine.communication.validator.ValidationResult;
 import br.angarion.dev.engine.network.MessageDeliveryHandler;
 import br.angarion.dev.engine.network.transport.MessageReceivedListener;
 import br.angarion.dev.engine.runtime.ComponentResolver;
@@ -13,16 +22,13 @@ final class ObedientGateway implements MessageReceivedListener {
 
     private final ComponentResolver resolver;
     private final MemoryLender memoryLender;
-    private final MessageDeliveryHandler deliveryHandler;
 
     public ObedientGateway(
         ComponentResolver componentResolver,
-        MemoryLender memoryLender,
-        MessageDeliveryHandler deliveryHandler
+        MemoryLender memoryLender
     ) {
         this.resolver = componentResolver;
         this.memoryLender = memoryLender;
-        this.deliveryHandler = deliveryHandler;
     }
 
     public void onMessageReceived(int clientId, MemorySegment message) {
@@ -37,16 +43,47 @@ final class ObedientGateway implements MessageReceivedListener {
             return;
         }
 
-        ValidatorResponse response = innerProcessor
+        ValidationResult validationResult = innerProcessor
             .validator()
             .validate(message);
 
-        if (response.getStatus() == IR.SUCCESS) {
-            innerProcessor.useCase().execute(clientId, message);
-            MemorySegment ir = memoryLender.borrow((int) IR.HEADER_SIZE);
-            IR.writeHeader(ir, (int) ir.byteSize(), clientId, IR.SUCCESS, 0);
+        final int correlationId = Intention.getCorrelationId(message);
 
-            deliveryHandler.deliveryIr(ir, clientId);
+        switch (validationResult) {
+            case Approved _ -> {
+                final MemorySegment response = memoryLender.borrow(
+                    ApprovedResponse.HEADER_SIZE
+                );
+                ApprovedResponse.writeHeader(response, correlationId);
+                ResponsePublisherSingleton.get().publish(response, clientId);
+            }
+            case Denied denied -> {
+                final MemorySegment response = memoryLender.borrow(
+                    DeniedResponse.HEADER_SIZE
+                );
+                DeniedResponse.writeHeader(
+                    response,
+                    correlationId,
+                    denied.reasonCode()
+                );
+                ResponsePublisherSingleton.get().publish(response, clientId);
+            }
+            case PartiallyApproved partiallyApproved -> {
+                final MemorySegment response = memoryLender.borrow(
+                    PartiallyApprovedResponse.HEADER_SIZE +
+                        partiallyApproved.payload().size()
+                );
+                PartiallyApprovedResponse.writeHeader(
+                    response,
+                    correlationId,
+                    partiallyApproved.reasonCode()
+                );
+                partiallyApproved
+                    .payload()
+                    .write(response, PartiallyApprovedResponse.HEADER_SIZE);
+
+                ResponsePublisherSingleton.get().publish(response, clientId);
+            }
         }
     }
 }
