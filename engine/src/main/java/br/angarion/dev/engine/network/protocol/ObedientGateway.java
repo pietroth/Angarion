@@ -11,7 +11,6 @@ import br.angarion.dev.engine.communication.validator.Approved;
 import br.angarion.dev.engine.communication.validator.Denied;
 import br.angarion.dev.engine.communication.validator.PartiallyApproved;
 import br.angarion.dev.engine.communication.validator.ValidationResult;
-import br.angarion.dev.engine.network.MessageDeliveryHandler;
 import br.angarion.dev.engine.network.transport.MessageReceivedListener;
 import br.angarion.dev.engine.runtime.ComponentResolver;
 import br.angarion.dev.engine.runtime.InnerProcessor;
