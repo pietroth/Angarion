@@ -15,6 +15,7 @@ import br.angarion.dev.engine.network.transport.MessageReceivedListener;
 import br.angarion.dev.engine.runtime.ComponentResolver;
 import br.angarion.dev.engine.runtime.InnerProcessor;
 import br.angarion.dev.engine.runtime.MemoryLender;
+
 import java.lang.foreign.MemorySegment;
 
 final class ObedientGateway implements MessageReceivedListener {
@@ -31,10 +32,9 @@ final class ObedientGateway implements MessageReceivedListener {
     }
 
     public void onMessageReceived(int clientId, MemorySegment message) {
-        int family = (int) MBT.FAMILY.get(message, 0L);
         int type = (int) MBT.TYPE.get(message, 0L);
 
-        InnerProcessor<?> innerProcessor = resolver.lookup(family, type);
+        InnerProcessor<?> innerProcessor = resolver.lookup(type);
         DataLayout dataLayout = innerProcessor.dataLayout();
 
         if (dataLayout.isNotification() == true) {

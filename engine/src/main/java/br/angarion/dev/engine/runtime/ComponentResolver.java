@@ -1,5 +1,5 @@
 package br.angarion.dev.engine.runtime;
 
 public interface ComponentResolver {
-    InnerProcessor<?> lookup(int family, int type);
+    InnerProcessor<?> lookup(int type);
 }

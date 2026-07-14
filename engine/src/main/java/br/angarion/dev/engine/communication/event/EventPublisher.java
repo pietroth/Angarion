@@ -5,7 +5,7 @@ import br.angarion.dev.api.communication.TargetScope;
 import br.angarion.dev.engine.network.MessageSender;
 import java.lang.foreign.MemorySegment;
 
-public class EventPublisher {
+public final class EventPublisher {
 
     private final MessageSender messageSender;
 
@@ -13,8 +13,8 @@ public class EventPublisher {
         this.messageSender = messageSender;
     }
 
-    public void publish(MemorySegment event, TargetScope targetScope) {
-        if (targetScope.forAllClients) {
+    public final void publish(MemorySegment event, TargetScope targetScope) {
+        if (targetScope.broadcast) {
             messageSender.broadcast(event);
             return;
         }
@@ -22,9 +22,7 @@ public class EventPublisher {
         TargetModifier modifier = targetScope.modifier;
         messageSender.sendTo(modifier.toArray(), event);
         System.out.println(
-            "Published event. Family: " +
-                Event.getFamily(event) +
-                ", Type: " +
+            "Published event. Type: " +
                 Event.getType(event) +
                 ", OriginId: " +
                 Event.getOriginId(event)

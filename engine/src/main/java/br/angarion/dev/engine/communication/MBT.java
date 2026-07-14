@@ -12,17 +12,10 @@ import java.nio.ByteOrder;
 public final class MBT {
 
     public static final StructLayout LAYOUT = MemoryLayout.structLayout(
-        ValueLayout.JAVA_SHORT.withName("family").withOrder(
-            ByteOrder.BIG_ENDIAN
-        ),
         ValueLayout.JAVA_SHORT.withName("type").withOrder(ByteOrder.BIG_ENDIAN)
     );
 
     public static final long LAYOUT_SIZE = LAYOUT.byteSize();
-
-    public static final VarHandle FAMILY = LAYOUT.varHandle(
-        PathElement.groupElement("family")
-    );
 
     public static final VarHandle TYPE = LAYOUT.varHandle(
         PathElement.groupElement("type")

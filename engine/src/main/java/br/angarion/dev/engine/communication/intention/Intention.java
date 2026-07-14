@@ -39,7 +39,6 @@ public final class Intention {
         int correlationId
     ) {
         BaseProtocol.TOTAL_SIZE.set(dest, 0L, totalSize);
-        MBT.FAMILY.set(dest, 0L, familyId);
         MBT.TYPE.set(dest, 0L, typeId);
         CORRELATION_ID.set(dest, 0L, correlationId);
     }
@@ -50,10 +49,6 @@ public final class Intention {
 
     public static final int getTotalSize(MemorySegment src) {
         return (int) BaseProtocol.TOTAL_SIZE.get(src, 0L);
-    }
-
-    public static final int getFamily(MemorySegment src) {
-        return (int) MBT.FAMILY.get(src, 0L);
     }
 
     public static final int getType(MemorySegment src) {

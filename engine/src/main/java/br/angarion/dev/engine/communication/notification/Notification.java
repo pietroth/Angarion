@@ -22,12 +22,7 @@ public final class Notification {
         int totalSize
     ) {
         BaseProtocol.TOTAL_SIZE.set(dest, 0L, totalSize);
-        MBT.FAMILY.set(dest, 0L, familyId);
         MBT.TYPE.set(dest, 0L, typeId);
-    }
-
-    public static final int getFamily(MemorySegment src) {
-        return (int) MBT.FAMILY.get(src, 0L);
     }
 
     public static final int getType(MemorySegment src) {

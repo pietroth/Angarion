@@ -1,16 +1,16 @@
 package br.angarion.dev.api.communication;
 
 public class TargetScope {
-    public final boolean forAllClients;
+    public final boolean broadcast;
     public final TargetModifier modifier;
 
-    public TargetScope(boolean forAllClients) {
-        this.forAllClients = forAllClients;
+    public TargetScope(boolean broadcast) {
+        this.broadcast = broadcast;
         this.modifier = null;
     }
 
     public TargetScope(TargetModifier modifier) {
-        this.forAllClients = false;
+        this.broadcast = false;
         this.modifier = modifier;
     }
 }
