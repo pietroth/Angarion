@@ -1,12 +1,15 @@
 plugins {
     id 'java'
+    id 'com.google.osdetector' version '1.7.3'
 }
 
 dependencies {
     implementation project(':engine')
     implementation project(':api')
 
-    implementation 'org.jctools:jctools-core:4.0.6'
-    implementation 'org.agrona:agrona:2.4.1'
-    implementation 'io.aeron:aeron-all:1.51.0'
+    implementation "io.netty.incubator:netty-incubator-codec-native-quic:0.0.70.Final:${osdetector.classifier}"
+    implementation 'it.unimi.dsi:fastutil:8.5.18'
+
+    runtimeOnly 'org.bouncycastle:bcprov-jdk18on:1.80'
+    runtimeOnly 'org.bouncycastle:bcpkix-jdk18on:1.80'
 }

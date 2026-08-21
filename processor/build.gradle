@@ -2,11 +2,22 @@ plugins {
     id 'java'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(26)
+    }
+}
+
 dependencies {
     implementation project(':engine')
     implementation project(':api')
-    implementation 'com.palantir.javapoet:javapoet:0.5.0'
     implementation 'it.unimi.dsi:fastutil:8.5.18'
+
+    // JavaPoet
+    implementation 'com.palantir.javapoet:javapoet:0.5.0'
+    annotationProcessor 'com.palantir.javapoet:javapoet:0.5.0'
+
+    // AutoService
     compileOnly 'com.google.auto.service:auto-service-annotations:1.1.1'
     annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
 }

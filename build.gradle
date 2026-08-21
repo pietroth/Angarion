@@ -8,6 +8,8 @@ allprojects {
     group = 'br.angarion.dev'
     version = '1.0-SNAPSHOT'
 
+    // plugins.apply('java')
+
     repositories {
         mavenCentral()
     }
@@ -15,7 +17,7 @@ allprojects {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(26)
     }
 }
 
@@ -42,7 +44,9 @@ sourceSets {
 
 dependencies {
     implementation project(':api')
-    annotationProcessor project(':processors')
+    implementation project(':infra')
+    implementation project(':engine')
+    annotationProcessor project(':processor')
 
     jmhImplementation project(':engine')
     jmhImplementation project(':api')
@@ -67,11 +71,11 @@ tasks.register('jmh', JavaExec) {
         'br.angarion.dev.benchmark.ResolverBenchmark',
         '-bm', 'thrpt',
         '-rf', 'text',
-        '-rff', "$buildDir/reports/jmh/ResolverBenchmark.txt"
+        '-rff', layout.buildDirectory.file("reports/jmh/ResolverBenchmark.txt").get().asFile.absolutePath
     )
     jvmArgs '-Xms1g', '-Xmx1g'
     dependsOn tasks.named('jmhClasses')
     doFirst {
-        file("$buildDir/reports/jmh").mkdirs()
+        layout.buildDirectory.dir("reports/jmh").get().asFile.mkdirs()
     }
 }

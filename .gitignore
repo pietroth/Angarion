@@ -19,6 +19,7 @@ target/
 *.nar
 *.jmod
 *.hprof
+!gradle/wrapper/gradle-wrapper.jar
 
 # Logs and temp files
 *.log

@@ -1,0 +1,85 @@
+ANGARION — FORMATO BINÁRIO DAS MENSAGENS
+
+Convenções
+  - Offsets são contados em bytes a partir do início da mensagem.
+  - int32 e int16 indicam inteiros de 32 e 16 bits, respectivamente.
+  - payload é uma sequência de bytes de tamanho variável; seu formato depende do type.
+
+EVENT
+
+  Layout declarado (10 bytes, sem padding declarado):
+
+  Offset  Tamanho  Campo       Tipo                 Ordem
+  0       4        totalSize   int32                big-endian
+  4       2        type        int16                big-endian
+  6       4        originId    int32                big-endian
+  10      variável  payload     bytes[...]           —
+
+  Estado de compatibilidade: não há formato serializável de Event na implementação
+  atual. A criação do MemoryLayout falha porque originId, alinhado a 4 bytes, é
+  declarado no offset 6. Portanto HEADER_SIZE, writeHeader e payloadSlice não ficam
+  disponíveis.
+
+INTENTION
+
+  Layout declarado (10 bytes, sem padding declarado):
+
+  Offset  Tamanho  Campo          Tipo                 Ordem
+  0       4        totalSize      int32                big-endian
+  4       2        type           int16                big-endian
+  6       4        correlationId  int32                big-endian
+  10      variável  payload        bytes[...]           —
+
+  Estado de compatibilidade: não há formato serializável de Intention na
+  implementação atual. A criação do MemoryLayout falha porque correlationId,
+  alinhado a 4 bytes, é declarado no offset 6. Portanto HEADER_SIZE, writeHeader e
+  payloadSlice não ficam disponíveis.
+
+NOTIFICATION
+
+  Layout declarado (6 bytes):
+
+  Offset  Tamanho  Campo       Tipo                 Ordem
+  0       4        totalSize   int32                big-endian
+  4       2        type        int16                big-endian
+  6       variável  payload     bytes[...]           —
+
+  HEADER_SIZE: 6.
+  Tamanho do payload: totalSize - 6.
+
+  Estado de compatibilidade: writeHeader não serializa uma Notification. MBT.TYPE
+  requer um valor int16, mas recebe typeId como int32. Se esse valor fosse convertido
+  para int16, o handle ainda usaria o offset 0 do segmento e sobreporia os dois
+  primeiros bytes de totalSize.
+
+RESPONSE
+
+  Cabeçalho-base (5 bytes):
+
+  Offset  Tamanho  Campo          Tipo                 Ordem
+  0       4        correlationId  int32                big-endian
+  4       1        status         int8                 —
+
+  status: 0 = APPROVED; 1 = DENIED; 2 = PARTIALLY_APPROVED; 3 = FAILURE.
+
+  APPROVED (5 bytes)
+    [correlationId:int32][status:0]
+
+  FAILURE (5 bytes)
+    [correlationId:int32][status:3]
+
+  DENIED — layout declarado (7 bytes)
+    [correlationId:int32][status:1][reasonCode:uint16, ordem nativa]
+
+  PARTIALLY_APPROVED — layout declarado (8 + N bytes)
+    [correlationId:int32][status:2][reasonCode:uint16, ordem nativa]
+    [padding:byte][payload:bytes[N]]
+
+  O payload de PARTIALLY_APPROVED é variável e inicia no offset 8. N é determinado
+  pelo tamanho da mensagem recebida. APPROVED, DENIED e FAILURE não declaram payload.
+
+  Estado de compatibilidade: DENIED e PARTIALLY_APPROVED não são inicializáveis na
+  implementação atual. A criação de seus MemoryLayouts falha porque reasonCode,
+  alinhado a 2 bytes, é declarado no offset 5. APPROVED e FAILURE inicializam seus
+  layouts, porém writeHeader não os serializa: Response.STATUS requer int8 e recebe
+  uma constante int32.

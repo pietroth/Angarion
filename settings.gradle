@@ -19,5 +19,5 @@ rootProject.name = 'Angarion'
 
 include 'api'
 include 'engine'
-include 'processors'
+include 'processor'
 include 'infra'

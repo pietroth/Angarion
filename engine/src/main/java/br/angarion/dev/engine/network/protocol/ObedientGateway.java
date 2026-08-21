@@ -38,6 +38,8 @@ final class ObedientGateway implements MessageReceivedListener {
         DataLayout dataLayout = innerProcessor.dataLayout();
 
         if (dataLayout.isNotification() == true) {
+            System.out.println("Notification received;");
+
             innerProcessor.useCase().execute(clientId, message);
             return;
         }
@@ -47,6 +49,8 @@ final class ObedientGateway implements MessageReceivedListener {
             .validate(message);
 
         final int correlationId = Intention.getCorrelationId(message);
+
+        System.out.println("Intention received; correlationId: " + correlationId + ";");
 
         switch (validationResult) {
             case Approved _ -> {
