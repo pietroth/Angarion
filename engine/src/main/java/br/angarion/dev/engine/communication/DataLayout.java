@@ -6,5 +6,5 @@ public interface DataLayout {
     int size();
     void write(MemorySegment dest, int offset);
     boolean isNotification();
-    int family();
+    String family();
 }

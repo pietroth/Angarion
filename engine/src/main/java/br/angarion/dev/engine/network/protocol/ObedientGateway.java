@@ -58,6 +58,9 @@ final class ObedientGateway implements MessageReceivedListener {
                     ApprovedResponse.HEADER_SIZE
                 );
                 ApprovedResponse.writeHeader(response, correlationId);
+
+                innerProcessor.useCase().execute(clientId, message);
+
                 ResponsePublisherSingleton.get().publish(response, clientId);
             }
             case Denied denied -> {

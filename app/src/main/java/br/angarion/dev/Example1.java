@@ -2,7 +2,5 @@ package br.angarion.dev;
 
 import br.angarion.dev.api.communication.Type;
 
-@Type(Example1Payload.class)
-public class Example1 {
-
-}
+@Type(family = Family1.class, payload = Example1Payload.class, isNotification = false)
+public class Example1 {}
