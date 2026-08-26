@@ -11,4 +11,6 @@ public @interface Type {
     Class<? extends Family> family();
     Class<? extends Payload> payload();
     boolean isNotification();
+    boolean isCpuIntensive();
+    boolean isBlocking();
 }

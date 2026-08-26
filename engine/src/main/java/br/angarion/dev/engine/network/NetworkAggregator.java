@@ -43,7 +43,7 @@ public class NetworkAggregator {
     public void flushAll(OutputStream[] outputStreams) {
         int limit = Math.min(buffers.length, outputStreams.length);
         for (int i = 0; i < limit; i++) {
-                if (outputStreams[i] != null) { 
+                if (outputStreams[i] != null) {
             flush(i, outputStreams[i]);
             }
         }

@@ -44,11 +44,25 @@ final class ObedientGateway implements MessageReceivedListener {
             return;
         }
 
+        final int correlationId = Intention.getCorrelationId(message);
+
+        if (dataLayout.isBlocking()) {
+            Thread.ofVirtual()
+            .name("IntentionProcessingThread-" + correlationId)
+            .start(() -> {
+                startIntentionProcessing(innerProcessor, message, clientId, correlationId);
+            });
+
+            return;
+        }
+
+        startIntentionProcessing(innerProcessor, message, clientId, correlationId);
+    }
+
+    private void startIntentionProcessing(InnerProcessor<?> innerProcessor, MemorySegment message, int clientId, int correlationId) {
         ValidationResult validationResult = innerProcessor
             .validator()
             .validate(message);
-
-        final int correlationId = Intention.getCorrelationId(message);
 
         System.out.println("Intention received; correlationId: " + correlationId + ";");
 
@@ -87,6 +101,9 @@ final class ObedientGateway implements MessageReceivedListener {
                 partiallyApproved
                     .payload()
                     .write(response, PartiallyApprovedResponse.HEADER_SIZE);
+
+                innerProcessor.useCase().execute(clientId, message); // Execution must serve as validation to ensure the "partially approved"
+                                                                     //                               result is consistent across both parts.
 
                 ResponsePublisherSingleton.get().publish(response, clientId);
             }
