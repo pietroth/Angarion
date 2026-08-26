@@ -6,5 +6,7 @@ public interface DataLayout {
     int size();
     void write(MemorySegment dest, int offset);
     boolean isNotification();
+    boolean isCpuIntensive();
+    boolean isBlocking();
     String family();
 }

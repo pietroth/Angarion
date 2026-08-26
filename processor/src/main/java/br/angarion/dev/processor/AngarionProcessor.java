@@ -99,6 +99,8 @@ public class AngarionProcessor extends AbstractProcessor {
         var valuesInRound = new LinkedHashMap<String, TypeMirror>();
         TypeElement payloadElement = null;
         boolean isNotification = false;
+        boolean isCpuIntensive = false;
+        boolean isBlocking = false;
         String familyName = null;
 
         if (mirror == null) {
@@ -129,6 +131,16 @@ public class AngarionProcessor extends AbstractProcessor {
                 case "isNotification" -> {
                     Boolean isNotificationValue = (Boolean) entry.getValue().getValue();
                     isNotification = isNotificationValue;
+                }
+
+                case "isBlocking" -> {
+                    boolean isBlockingValue = (Boolean) entry.getValue().getValue();
+                    isBlocking = isBlockingValue;
+                }
+
+                case "isCpuIntensive" -> {
+                    boolean isCpuIntensiveValue = (Boolean) entry.getValue().getValue();
+                    isCpuIntensive = isCpuIntensiveValue;
                 }
 
                 case "family" -> {
@@ -306,6 +318,18 @@ public class AngarionProcessor extends AbstractProcessor {
             .addStatement("return $L", isNotification)
             .build();
 
+        MethodSpec isBlockingMethod = MethodSpec.methodBuilder("isBlocking")
+            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+            .returns(boolean.class)
+            .addStatement("return $L", isBlocking)
+            .build();
+
+        MethodSpec isCpuIntensiveMethod = MethodSpec.methodBuilder("isCpuIntensive")
+            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+            .returns(boolean.class)
+            .addStatement("return $L", isCpuIntensive)
+            .build();
+
         MethodSpec sizeMethod = MethodSpec.methodBuilder("size")
             .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
             .returns(int.class)
@@ -345,6 +369,8 @@ public class AngarionProcessor extends AbstractProcessor {
             .addField(payloadTypeField)
             .addMethod(classConstructor)
             .addMethod(isNotificationMethod)
+            .addMethod(isCpuIntensiveMethod)
+            .addMethod(isBlockingMethod)
             .addMethod(sizeMethod)
             .addMethod(familyMethod)
             .addMethod(writeMethod.build());
