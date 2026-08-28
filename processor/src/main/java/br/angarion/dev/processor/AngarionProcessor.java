@@ -3,11 +3,8 @@ package br.angarion.dev.processor;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.StructLayout;
 import java.lang.foreign.ValueLayout;
-import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +16,6 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -35,7 +31,6 @@ import javax.tools.Diagnostic;
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
 
-import br.angarion.dev.api.communication.Payload;
 import br.angarion.dev.api.communication.Type;
 import br.angarion.dev.engine.communication.DataLayout;
 
@@ -81,9 +76,15 @@ public class AngarionProcessor extends AbstractProcessor {
         Messager messager = processingEnv.getMessager();
 
         Set<? extends Element> types = roundEnv.getElementsAnnotatedWith(Type.class);
+        var dataLayouts = new ArrayList<ClassName>();
 
         for (Element element : types) {
-            createDataLayout(element, elementUtils, typeUtils, messager);
+            Optional<ClassName> dataLayout = createDataLayout(element, elementUtils, typeUtils, messager);
+            if (dataLayout.isEmpty()) {
+                messager.printMessage(Diagnostic.Kind.ERROR, "Error generating DataLayout");
+                return false;
+            }
+            dataLayouts.add(dataLayout.get());
         }
 
         return true;
@@ -392,6 +393,9 @@ public class AngarionProcessor extends AbstractProcessor {
             messager.printMessage(Diagnostic.Kind.ERROR, e.toString());
             return Optional.empty();
         }
+    }
+
+    private void generateComponentResolver() {
 
     }
 

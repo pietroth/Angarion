@@ -17,11 +17,15 @@ import br.angarion.dev.engine.runtime.InnerProcessor;
 import br.angarion.dev.engine.runtime.MemoryLender;
 
 import java.lang.foreign.MemorySegment;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 final class ObedientGateway implements MessageReceivedListener {
 
     private final ComponentResolver resolver;
     private final MemoryLender memoryLender;
+    private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
 
     public ObedientGateway(
         ComponentResolver componentResolver,
@@ -39,7 +43,6 @@ final class ObedientGateway implements MessageReceivedListener {
 
         if (dataLayout.isNotification() == true) {
             System.out.println("Notification received;");
-
             innerProcessor.useCase().execute(clientId, message);
             return;
         }
@@ -47,38 +50,36 @@ final class ObedientGateway implements MessageReceivedListener {
         final int correlationId = Intention.getCorrelationId(message);
 
         if (dataLayout.isBlocking()) {
-            Thread.ofVirtual()
-            .name("IntentionProcessingThread-" + correlationId)
-            .start(() -> {
-                startIntentionProcessing(innerProcessor, message, clientId, correlationId);
+            CompletableFuture.supplyAsync(() -> {
+                return processIntention(innerProcessor, message, clientId, correlationId);
+            }, executorService).thenAccept(response -> {
+                ResponsePublisherSingleton.get().publish(response, clientId);
             });
-
             return;
         }
 
-        startIntentionProcessing(innerProcessor, message, clientId, correlationId);
+        ResponsePublisherSingleton.get().publish(processIntention(innerProcessor, message, clientId, correlationId), clientId);
     }
 
-    private void startIntentionProcessing(InnerProcessor<?> innerProcessor, MemorySegment message, int clientId, int correlationId) {
+    private MemorySegment processIntention(InnerProcessor<?> innerProcessor, MemorySegment message, int clientId, int correlationId) {
         ValidationResult validationResult = innerProcessor
             .validator()
             .validate(message);
 
         System.out.println("Intention received; correlationId: " + correlationId + ";");
+        final MemorySegment response;
 
         switch (validationResult) {
             case Approved _ -> {
-                final MemorySegment response = memoryLender.borrow(
+                response = memoryLender.borrow(
                     ApprovedResponse.HEADER_SIZE
                 );
                 ApprovedResponse.writeHeader(response, correlationId);
 
                 innerProcessor.useCase().execute(clientId, message);
-
-                ResponsePublisherSingleton.get().publish(response, clientId);
             }
             case Denied denied -> {
-                final MemorySegment response = memoryLender.borrow(
+                response = memoryLender.borrow(
                     DeniedResponse.HEADER_SIZE
                 );
                 DeniedResponse.writeHeader(
@@ -86,10 +87,9 @@ final class ObedientGateway implements MessageReceivedListener {
                     correlationId,
                     denied.reasonCode()
                 );
-                ResponsePublisherSingleton.get().publish(response, clientId);
             }
             case PartiallyApproved partiallyApproved -> {
-                final MemorySegment response = memoryLender.borrow(
+                response = memoryLender.borrow(
                     PartiallyApprovedResponse.HEADER_SIZE +
                         partiallyApproved.payload().size()
                 );
@@ -104,9 +104,9 @@ final class ObedientGateway implements MessageReceivedListener {
 
                 innerProcessor.useCase().execute(clientId, message); // Execution must serve as validation to ensure the "partially approved"
                                                                      //                               result is consistent across both parts.
-
-                ResponsePublisherSingleton.get().publish(response, clientId);
             }
         }
+
+        return response;
     }
 }
