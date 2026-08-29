@@ -12,7 +12,11 @@ import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.incubator.codec.quic.QuicStreamType;
 
 public final class NettyQuicMessageSender implements MessageSender {
-    private final NettyQuicClientsConnectionsRegistry clientsConnectionsRegistry = new NettyQuicClientsConnectionsRegistry();
+    private final NettyQuicClientsConnectionsRegistry clientsConnectionsRegistry;
+
+    public NettyQuicMessageSender(NettyQuicClientsConnectionsRegistry connectionsRegistry) {
+        this.clientsConnectionsRegistry = connectionsRegistry;
+    }
 
     public void sendTo(int[] ids, MemorySegment message) {
         for (int id : ids) {

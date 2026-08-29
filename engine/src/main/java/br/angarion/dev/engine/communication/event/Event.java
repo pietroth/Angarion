@@ -25,7 +25,7 @@ public final class Event {
         ValueLayout.JAVA_INT.withName("originId").withOrder(
             ByteOrder.BIG_ENDIAN
         )
-    ).withByteAlignment(8);
+    );
 
     private static final VarHandle ORIGIN_ID = LAYOUT.varHandle(
         PathElement.groupElement("originId")
@@ -33,11 +33,13 @@ public final class Event {
 
     public static final void writeHeader(
         MemorySegment dest,
-        int familyId,
         int typeId,
         int totalSize,
         int originId
     ) {
+        if (typeId < Short.MIN_VALUE || typeId > Short.MAX_VALUE)
+            throw new IllegalArgumentException("typeId must be between " + Short.MIN_VALUE + " and " + Short.MAX_VALUE);
+
         BaseProtocol.TOTAL_SIZE.set(dest, 0L, totalSize);
         MBT.TYPE.set(dest, 0L, typeId);
         ORIGIN_ID.set(dest, 0L, originId);

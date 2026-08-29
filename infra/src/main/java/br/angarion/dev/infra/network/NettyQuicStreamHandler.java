@@ -11,6 +11,7 @@ import io.netty.incubator.codec.quic.QuicChannel;
 
 public final class NettyQuicStreamHandler extends ChannelInboundHandlerAdapter {
     private final ArrayList<MessageReceivedListener> listeners;
+    private ByteBuf accumulator;
 
     public NettyQuicStreamHandler(
         ArrayList<MessageReceivedListener> listeners)
@@ -19,15 +20,30 @@ public final class NettyQuicStreamHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    public void handlerAdded(ChannelHandlerContext ctx) {
+        accumulator = ctx.alloc().buffer();
+    }
+
+    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf in = (ByteBuf) msg;
+
         try {
-            MemorySegment segment = ByteBuf2MemorySegment.ToSegment(in);
+            MemorySegment segment = ByteBuf2MemorySegment.toSegment(in);
 
-            QuicChannel connection = (QuicChannel) ctx.channel().parent();
-            int clientId = connection.attr(ClientIdAttributeKey.CLIENT_ID).get();
+            QuicChannel connection =
+                    (QuicChannel) ctx.channel().parent();
 
-            System.out.println("Message received from client " + clientId + "; totalSize: " + segment.byteSize() + ";");
+            int clientId =
+                    connection.attr(ClientIdAttributeKey.CLIENT_ID).get();
+
+            System.out.println(
+                    "Message received from client "
+                    + clientId
+                    + "; totalSize: "
+                    + segment.byteSize()
+                    + ";"
+            );
 
             for (MessageReceivedListener listener : listeners) {
                 listener.onMessageReceived(clientId, segment);

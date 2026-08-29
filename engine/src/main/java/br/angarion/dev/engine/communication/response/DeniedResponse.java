@@ -12,8 +12,9 @@ public final class DeniedResponse {
 
     private static final MemoryLayout LAYOUT = MemoryLayout.structLayout(
         Response.LAYOUT.withName("base"), // 5 bytes (1 int, 1 byte)
+        MemoryLayout.paddingLayout(1),
         ValueLayout.JAVA_SHORT.withName("reasonCode")
-    ).withByteAlignment(4);
+    );
 
     private static final VarHandle REASON_CODE = LAYOUT.varHandle(
         PathElement.groupElement("reasonCode")
@@ -44,7 +45,8 @@ public final class DeniedResponse {
     }
 
     public static final int getReasonCode(MemorySegment src) {
-        return (short) REASON_CODE.get(src, 0L) & 0xFFFF;
+        short value = (short) REASON_CODE.get(src, 0L);
+        return Short.toUnsignedInt(value);
     }
 
     public static final int HEADER_SIZE = (int) LAYOUT.byteSize();

@@ -10,7 +10,7 @@ import br.angarion.dev.engine.network.client.ClientProcessedListener;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class NettyQuicClientLCManager implements ClientLCManager {
-    private final NettyQuicClientsConnectionsRegistry clientsConnectionsRegistry = new NettyQuicClientsConnectionsRegistry();
+    private final NettyQuicClientsConnectionsRegistry clientsConnectionsRegistry;
     private final ArrayList<ClientProcessedListener> clientProcessedListeners = new ArrayList<ClientProcessedListener>();
     private final ArrayList<ClientConnectedListener> clientConnectedListeners = new ArrayList<ClientConnectedListener>();
     private final IntArrayList freeIds = new IntArrayList();
@@ -18,11 +18,13 @@ public class NettyQuicClientLCManager implements ClientLCManager {
     private final int maxClients;
     private int nextId = 0;
 
-    public NettyQuicClientLCManager(int maxClients) {
-       this.maxClients = maxClients;
+    public NettyQuicClientLCManager(NettyQuicClientsConnectionsRegistry connectionsRegistry, int maxClients) {
+        this.clientsConnectionsRegistry = connectionsRegistry;
+        this.maxClients = maxClients;
     }
 
-    public NettyQuicClientLCManager() {
+    public NettyQuicClientLCManager(NettyQuicClientsConnectionsRegistry connectionsRegistry) {
+        this.clientsConnectionsRegistry = connectionsRegistry;
         this.maxClients = 0;
     }
 
@@ -45,7 +47,7 @@ public class NettyQuicClientLCManager implements ClientLCManager {
 
     @Override
     public void forEachOnline(Consumer<Client> consumer) {
-
+        cli
     }
 
     @Override

@@ -12,9 +12,9 @@ public final class PartiallyApprovedResponse {
 
     private static final MemoryLayout LAYOUT = MemoryLayout.structLayout(
         Response.LAYOUT.withName("base"), // 5 bytes (1 int, 1 byte)
-        ValueLayout.JAVA_SHORT.withName("reasonCode"),
-        MemoryLayout.paddingLayout(1)
-    ).withByteAlignment(4);
+        MemoryLayout.paddingLayout(1),
+        ValueLayout.JAVA_SHORT.withName("reasonCode")
+    );
 
     private static final VarHandle REASON_CODE = LAYOUT.varHandle(
         PathElement.groupElement("reasonCode")
@@ -27,7 +27,7 @@ public final class PartiallyApprovedResponse {
     ) {
         if (reasonCode < 0 || reasonCode > 65535) {
             throw new IllegalArgumentException(
-                "errorCode must be between 0 and 65535"
+                "reasonCode must be between 0 and 65535"
             );
         }
 

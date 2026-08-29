@@ -12,6 +12,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.incubator.codec.quic.*;
 
@@ -20,6 +21,8 @@ public final class NettyQuicServer implements Server {
     private final ArrayList<MessageReceivedListener> messageReceivedListeners = new ArrayList<>();
     private final int eventLoopGroupNThreads;
     private final NettyQuicClientLCManager clientLCManager;
+
+    private static final int MAX_MESSAGE_BYTES_SIZE = 64 * 1024; // 64 KiB
 
     public NettyQuicServer(int eventLoopGroupNThreads, NettyQuicClientLCManager clientLCManager) {
         this.eventLoopGroupNThreads = eventLoopGroupNThreads;
@@ -49,7 +52,15 @@ public final class NettyQuicServer implements Server {
                 .streamHandler(new ChannelInitializer<QuicStreamChannel>() {
                     @Override
                     protected void initChannel(QuicStreamChannel ch) {
-                        ch.pipeline().addLast(new NettyQuicStreamHandler(messageReceivedListeners));
+                        ch.pipeline().addLast(
+                            new LengthFieldBasedFrameDecoder(
+                                MAX_MESSAGE_BYTES_SIZE,
+                                0, // totalSize starts at offset 0
+                                Integer.BYTES, // totalSize byte size
+                                -Integer.BYTES, // totalSize includes the size itself
+                                0 // do not remove bytes
+                            )
+                        ).addLast(new NettyQuicStreamHandler(messageReceivedListeners));
                     }
                 })
                 .build();

@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import io.netty.buffer.ByteBuf;
 
 public final class ByteBuf2MemorySegment {
-    public static final MemorySegment ToSegment(ByteBuf byteBuf) {
+    public static final MemorySegment toSegment(ByteBuf byteBuf) {
         ByteBuffer nioBuffer = byteBuf.nioBuffer(
             byteBuf.readerIndex(),
             byteBuf.readableBytes()
