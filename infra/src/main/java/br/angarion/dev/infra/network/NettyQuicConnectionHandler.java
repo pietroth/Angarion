@@ -6,7 +6,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.incubator.codec.quic.QuicChannel;
 
 public final class NettyQuicConnectionHandler extends ChannelInboundHandlerAdapter {
-    private final ClientLCManager clientLCManager;
+    private final ClientLCManager<NettyQuicClient> clientLCManager;
 
     public NettyQuicConnectionHandler(NettyQuicClientLCManager clientLCManager) {
         this.clientLCManager = clientLCManager;

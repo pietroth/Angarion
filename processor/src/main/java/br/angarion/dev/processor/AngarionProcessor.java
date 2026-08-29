@@ -395,9 +395,6 @@ public class AngarionProcessor extends AbstractProcessor {
         }
     }
 
-    private void generateComponentResolver() {
-
-    }
 
     private AnnotationMirror getAnnotationMirror(Element element, String annotationName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {

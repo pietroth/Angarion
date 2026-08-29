@@ -1,15 +1,14 @@
 package br.angarion.dev.infra.network;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
 
-import br.angarion.dev.engine.network.client.Client;
 import br.angarion.dev.engine.network.client.ClientConnectedListener;
 import br.angarion.dev.engine.network.client.ClientLCManager;
 import br.angarion.dev.engine.network.client.ClientProcessedListener;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntObjectBiConsumer;
 
-public class NettyQuicClientLCManager implements ClientLCManager {
+public class NettyQuicClientLCManager implements ClientLCManager<NettyQuicClient> {
     private final NettyQuicClientsConnectionsRegistry clientsConnectionsRegistry;
     private final ArrayList<ClientProcessedListener> clientProcessedListeners = new ArrayList<ClientProcessedListener>();
     private final ArrayList<ClientConnectedListener> clientConnectedListeners = new ArrayList<ClientConnectedListener>();
@@ -29,7 +28,7 @@ public class NettyQuicClientLCManager implements ClientLCManager {
     }
 
     @Override
-    public int connect(Client client) {
+    public int connect(NettyQuicClient client) {
         if (clientsConnectionsRegistry.lenght() >= maxClients) {
             throw new IllegalArgumentException("Max clients reached!");
         }
@@ -46,8 +45,8 @@ public class NettyQuicClientLCManager implements ClientLCManager {
     }
 
     @Override
-    public void forEachOnline(Consumer<Client> consumer) {
-        cli
+    public void forEachOnline(IntObjectBiConsumer<NettyQuicClient> consumer) {
+        clientsConnectionsRegistry.forEach(consumer);
     }
 
     @Override

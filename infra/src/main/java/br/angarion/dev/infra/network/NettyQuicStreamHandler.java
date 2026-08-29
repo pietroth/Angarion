@@ -11,17 +11,11 @@ import io.netty.incubator.codec.quic.QuicChannel;
 
 public final class NettyQuicStreamHandler extends ChannelInboundHandlerAdapter {
     private final ArrayList<MessageReceivedListener> listeners;
-    private ByteBuf accumulator;
 
     public NettyQuicStreamHandler(
         ArrayList<MessageReceivedListener> listeners)
     {
         this.listeners = listeners;
-    }
-
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) {
-        accumulator = ctx.alloc().buffer();
     }
 
     @Override
