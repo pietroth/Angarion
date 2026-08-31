@@ -20,12 +20,18 @@ import java.lang.foreign.MemorySegment;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.Queue;
+
+import org.jctools.queues.SpscArrayQueue;
 
 final class ObedientGateway implements MessageReceivedListener {
 
     private final ComponentResolver resolver;
     private final MemoryLender memoryLender;
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
+
+    private final int queueCapacity = 1024;
+    private final Queue<MessageReceivedWrapper> queue = new SpscArrayQueue<>(queueCapacity);
 
     public ObedientGateway(
         ComponentResolver componentResolver,
@@ -35,7 +41,23 @@ final class ObedientGateway implements MessageReceivedListener {
         this.memoryLender = memoryLender;
     }
 
-    public void onMessageReceived(int clientId, MemorySegment message) {
+    public void onMessageReceived(MessageReceivedWrapper messageReceived) {
+        while (!queue.offer(messageReceived)) {
+            Thread.onSpinWait();
+        }
+    }
+
+    public void start() {
+        while (!Thread.currentThread().isInterrupted()) {
+            MessageReceivedWrapper message = queue.poll();
+
+            if (message != null) {
+                onMessageReceived(message.clientId(), message.message());
+            }
+        }
+    }
+
+    private void onMessageReceived(int clientId, MemorySegment message) {
         int type = (int) MBT.TYPE.get(message, 0L);
 
         InnerProcessor<?> innerProcessor = resolver.lookup(type);

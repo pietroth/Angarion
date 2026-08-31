@@ -1,7 +1,7 @@
 package br.angarion.dev.engine.network.transport;
 
-import java.lang.foreign.MemorySegment;
+import br.angarion.dev.engine.network.protocol.MessageReceivedWrapper;
 
 public interface MessageReceivedListener {
-    void onMessageReceived(int clientId, MemorySegment segment);
+    void onMessageReceived(MessageReceivedWrapper messageReceivedWrapper);
 }

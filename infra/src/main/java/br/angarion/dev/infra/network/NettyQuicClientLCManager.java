@@ -29,7 +29,7 @@ public class NettyQuicClientLCManager implements ClientLCManager<NettyQuicClient
 
     @Override
     public int connect(NettyQuicClient client) {
-        if (clientsConnectionsRegistry.lenght() >= maxClients) {
+        if (clientsConnectionsRegistry.lenght() >= maxClients && maxClients != 0) {
             throw new IllegalArgumentException("Max clients reached!");
         }
 
