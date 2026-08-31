@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import br.angarion.dev.engine.network.client.ClientConnectedListener;
 import br.angarion.dev.engine.network.transport.MessageReceivedListener;
 import br.angarion.dev.engine.network.transport.Server;
-import br.angarion.dev.engine.runtime.MemoryLender;
+import br.angarion.dev.engine.runtime.MemoryBank;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
@@ -22,18 +22,18 @@ public final class NettyQuicServer implements Server {
     private final ArrayList<MessageReceivedListener> messageReceivedListeners = new ArrayList<>();
     private final int eventLoopGroupNThreads;
     private final NettyQuicClientLCManager clientLCManager;
-    private final MemoryLender memoryLender;
+    private final MemoryBank memoryBank;
 
     private static final int MAX_MESSAGE_BYTES_SIZE = 1460;
 
     public NettyQuicServer(
         int eventLoopGroupNThreads,
         NettyQuicClientLCManager clientLCManager,
-        MemoryLender memoryLender
+        MemoryBank memoryBank
     ){
         this.eventLoopGroupNThreads = eventLoopGroupNThreads;
         this.clientLCManager = clientLCManager;
-        this.memoryLender = memoryLender;
+        this.memoryBank = memoryBank;
     }
 
     @Override
@@ -67,7 +67,7 @@ public final class NettyQuicServer implements Server {
                                 -Integer.BYTES, // totalSize includes the size itself
                                 0 // do not remove bytes
                             )
-                        ).addLast(new NettyQuicStreamHandler(messageReceivedListeners, memoryLender));
+                        ).addLast(new NettyQuicStreamHandler(messageReceivedListeners, memoryBank));
                     }
                 })
                 .build();

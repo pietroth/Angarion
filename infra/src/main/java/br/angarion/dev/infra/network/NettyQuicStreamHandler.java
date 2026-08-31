@@ -4,7 +4,7 @@ import java.lang.foreign.MemorySegment;
 import java.util.ArrayList;
 
 import br.angarion.dev.engine.network.transport.MessageReceivedListener;
-import br.angarion.dev.engine.runtime.MemoryLender;
+import br.angarion.dev.engine.runtime.MemoryBank;
 import br.angarion.dev.engine.network.protocol.MessageReceivedWrapper;
 
 import io.netty.buffer.ByteBuf;
@@ -14,14 +14,14 @@ import io.netty.incubator.codec.quic.QuicChannel;
 
 public final class NettyQuicStreamHandler extends ChannelInboundHandlerAdapter {
     private final ArrayList<MessageReceivedListener> listeners;
-    private final MemoryLender memoryLender;
+    private final MemoryBank memoryBank;
 
     public NettyQuicStreamHandler(
         ArrayList<MessageReceivedListener> listeners,
-        MemoryLender memoryLender)
+        MemoryBank memoryBank)
     {
         this.listeners = listeners;
-        this.memoryLender = memoryLender;
+        this.memoryBank = memoryBank;
     }
 
     @Override
@@ -30,7 +30,7 @@ public final class NettyQuicStreamHandler extends ChannelInboundHandlerAdapter {
 
         try {
             MemorySegment inSegment = ByteBuf2MemorySegment.toSegment(in);
-            MemorySegment segment = memoryLender.borrow((int) inSegment.byteSize());
+            MemorySegment segment = memoryBank.get((int) inSegment.byteSize());
 
             MemorySegment.copy(inSegment, 0, segment, 0, (int) inSegment.byteSize());
 

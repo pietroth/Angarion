@@ -14,7 +14,7 @@ import br.angarion.dev.engine.communication.validator.ValidationResult;
 import br.angarion.dev.engine.network.transport.MessageReceivedListener;
 import br.angarion.dev.engine.runtime.ComponentResolver;
 import br.angarion.dev.engine.runtime.InnerProcessor;
-import br.angarion.dev.engine.runtime.MemoryLender;
+import br.angarion.dev.engine.runtime.MemoryBank;
 
 import java.lang.foreign.MemorySegment;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +27,7 @@ import org.jctools.queues.SpscArrayQueue;
 final class ObedientGateway implements MessageReceivedListener {
 
     private final ComponentResolver resolver;
-    private final MemoryLender memoryLender;
+    private final MemoryBank memoryBank;
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
 
     private final int queueCapacity = 1024;
@@ -35,10 +35,10 @@ final class ObedientGateway implements MessageReceivedListener {
 
     public ObedientGateway(
         ComponentResolver componentResolver,
-        MemoryLender memoryLender
+        MemoryBank memoryBank
     ) {
         this.resolver = componentResolver;
-        this.memoryLender = memoryLender;
+        this.memoryBank = memoryBank;
     }
 
     public void onMessageReceived(MessageReceivedWrapper messageReceived) {
@@ -93,7 +93,7 @@ final class ObedientGateway implements MessageReceivedListener {
 
         switch (validationResult) {
             case Approved _ -> {
-                response = memoryLender.borrow(
+                response = memoryBank.get(
                     ApprovedResponse.HEADER_SIZE
                 );
                 ApprovedResponse.writeHeader(response, correlationId);
@@ -101,7 +101,7 @@ final class ObedientGateway implements MessageReceivedListener {
                 innerProcessor.useCase().execute(clientId, message);
             }
             case Denied denied -> {
-                response = memoryLender.borrow(
+                response = memoryBank.get(
                     DeniedResponse.HEADER_SIZE
                 );
                 DeniedResponse.writeHeader(
@@ -111,7 +111,7 @@ final class ObedientGateway implements MessageReceivedListener {
                 );
             }
             case PartiallyApproved partiallyApproved -> {
-                response = memoryLender.borrow(
+                response = memoryBank.get(
                     PartiallyApprovedResponse.HEADER_SIZE +
                         partiallyApproved.payload().size()
                 );
