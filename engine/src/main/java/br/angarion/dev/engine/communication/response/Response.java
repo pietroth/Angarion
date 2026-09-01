@@ -16,10 +16,11 @@ public final class Response {
     public static final int FAILURE = 3;
 
     public static final MemoryLayout LAYOUT = MemoryLayout.structLayout(
-        ValueLayout.JAVA_INT.withName("correlationId").withOrder(
+        ValueLayout.JAVA_SHORT.withName("correlationId").withOrder(
             ByteOrder.BIG_ENDIAN
         ),
-        ValueLayout.JAVA_BYTE.withName("status").withOrder(ByteOrder.BIG_ENDIAN)
+        ValueLayout.JAVA_BYTE.withName("status").withOrder(ByteOrder.BIG_ENDIAN),
+        MemoryLayout.paddingLayout(1)
     );
 
     public static final VarHandle STATUS = LAYOUT.varHandle(

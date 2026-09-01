@@ -11,26 +11,33 @@ public final class Notification {
     private Notification() {}
 
     private static final StructLayout LAYOUT = MemoryLayout.structLayout(
-        BaseProtocol.LAYOUT.withName("protocol"), // 4 bytes (1 int)
-        MBT.LAYOUT.withName("mbt") // 4 bytes (2 shorts)
+        BaseProtocol.LAYOUT.withName("protocol"), // 2 bytes (1 short)
+        MBT.LAYOUT.withName("mbt") // 2 bytes (1 short)
     ).withByteAlignment(4);
 
     public static final void writeHeader(
         MemorySegment dest,
-        int familyId,
         int typeId,
         int totalSize
     ) {
+        if (typeId < 0 || typeId > 0xFFFF) // Unsigned short (0..65535)
+            throw new IllegalArgumentException("typeId must be between 0 and 65.535");
+
+        if (totalSize > 1460)
+            throw new IllegalArgumentException("totalSize max: 1460");
+
         BaseProtocol.TOTAL_SIZE.set(dest, 0L, totalSize);
         MBT.TYPE.set(dest, 0L, typeId);
     }
 
     public static final int getType(MemorySegment src) {
-        return (int) MBT.TYPE.get(src, 0L);
+        short value = (short) MBT.TYPE.get(src, 0L);
+        return Short.toUnsignedInt(value);
     }
 
     public static final int getTotalSize(MemorySegment src) {
-        return (int) BaseProtocol.TOTAL_SIZE.get(src, 0L);
+        short value = (short) BaseProtocol.TOTAL_SIZE.get(src, 0L);
+        return Short.toUnsignedInt(value);
     }
 
     public static final long HEADER_SIZE = LAYOUT.byteSize();

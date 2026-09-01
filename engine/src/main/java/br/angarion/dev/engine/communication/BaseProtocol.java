@@ -12,7 +12,7 @@ public final class BaseProtocol {
     private BaseProtocol() {}
 
     public static final StructLayout LAYOUT = MemoryLayout.structLayout(
-        ValueLayout.JAVA_INT.withName("totalSize").withOrder(
+        ValueLayout.JAVA_SHORT.withName("totalSize").withOrder(
             ByteOrder.BIG_ENDIAN
         )
     );
