@@ -69,14 +69,14 @@ public class NettyQuicClientLCManager implements ClientLCManager<NettyQuicClient
         clientConnectedListeners.add(listener);
     }
 
-    public int acquireId() {
+    private int acquireId() {
         if (!freeIds.isEmpty()) {
             return freeIds.popInt();
         }
         return nextId++;
     }
 
-    public void releaseId(int id) {
+    private void releaseId(int id) {
         freeIds.push(id);
     }
 }
