@@ -5,10 +5,12 @@ import br.angarion.dev.engine.communication.MBT;
 import br.angarion.dev.engine.communication.intention.Intention;
 import br.angarion.dev.engine.communication.response.ApprovedResponse;
 import br.angarion.dev.engine.communication.response.DeniedResponse;
+import br.angarion.dev.engine.communication.response.FailureResponse;
 import br.angarion.dev.engine.communication.response.PartiallyApprovedResponse;
 import br.angarion.dev.engine.communication.response.ResponsePublisherSingleton;
 import br.angarion.dev.engine.communication.validator.Approved;
 import br.angarion.dev.engine.communication.validator.Denied;
+import br.angarion.dev.engine.communication.validator.Failure;
 import br.angarion.dev.engine.communication.validator.PartiallyApproved;
 import br.angarion.dev.engine.communication.validator.ValidationResult;
 import br.angarion.dev.engine.network.transport.MessageReceivedListener;
@@ -93,17 +95,13 @@ final class ObedientGateway implements MessageReceivedListener {
 
         switch (validationResult) {
             case Approved _ -> {
-                response = memoryBank.get(
-                    ApprovedResponse.HEADER_SIZE
-                );
+                response = memoryBank.get(ApprovedResponse.HEADER_SIZE);
                 ApprovedResponse.writeHeader(response, correlationId);
 
                 innerProcessor.useCase().execute(clientId, message);
             }
             case Denied denied -> {
-                response = memoryBank.get(
-                    DeniedResponse.HEADER_SIZE
-                );
+                response = memoryBank.get(DeniedResponse.HEADER_SIZE);
                 DeniedResponse.writeHeader(
                     response,
                     correlationId,
@@ -115,6 +113,7 @@ final class ObedientGateway implements MessageReceivedListener {
                     PartiallyApprovedResponse.HEADER_SIZE +
                         partiallyApproved.payload().size()
                 );
+
                 PartiallyApprovedResponse.writeHeader(
                     response,
                     correlationId,
@@ -126,6 +125,10 @@ final class ObedientGateway implements MessageReceivedListener {
 
                 innerProcessor.useCase().execute(clientId, message); // Execution must serve as validation to ensure the "partially approved"
                                                                      //                               result is consistent across both parts.
+            }
+            case Failure _ -> {
+                response = memoryBank.get(FailureResponse.HEADER_SIZE);
+                FailureResponse.writeHeader(response, correlationId);
             }
         }
 

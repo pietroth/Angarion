@@ -8,7 +8,7 @@ public final class FailureResponse {
     private FailureResponse() {}
 
     private static final MemoryLayout LAYOUT = MemoryLayout.structLayout(
-        Response.LAYOUT.withName("base")
+        Response.LAYOUT.withName("base") // 4 bytes (1 short, 1 byte, 1 padding)
     );
 
     public static final void writeHeader(MemorySegment src, int correlationId) {
