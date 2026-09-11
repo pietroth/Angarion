@@ -66,7 +66,7 @@ public final class Intention {
         return Short.toUnsignedInt(value);
     }
 
-    public static final long HEADER_SIZE = LAYOUT.byteSize();
+    public static final int HEADER_SIZE = (int) LAYOUT.byteSize();
 
     public static final MemorySegment payloadSlice(MemorySegment message) {
         return message.asSlice(HEADER_SIZE, message.byteSize() - HEADER_SIZE);

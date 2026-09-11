@@ -15,7 +15,7 @@ public final class MBT {
         ValueLayout.JAVA_SHORT.withName("type").withOrder(ByteOrder.BIG_ENDIAN)
     );
 
-    public static final long LAYOUT_SIZE = LAYOUT.byteSize();
+    public static final int LAYOUT_SIZE = (int) LAYOUT.byteSize();
 
     public static final VarHandle TYPE = LAYOUT.varHandle(
         PathElement.groupElement("type")
