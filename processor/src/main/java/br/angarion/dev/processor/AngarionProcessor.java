@@ -31,15 +31,21 @@ import javax.tools.Diagnostic;
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
 
+import br.angarion.dev.api.communication.Payload;
 import br.angarion.dev.api.communication.Type;
 import br.angarion.dev.engine.communication.DataLayout;
+import br.angarion.dev.engine.runtime.ComponentResolver;
+import br.angarion.dev.engine.runtime.InnerProcessor;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import com.palantir.javapoet.CodeBlock;
 import com.palantir.javapoet.ClassName;
 import com.palantir.javapoet.FieldSpec;
 import com.palantir.javapoet.JavaFile;
 import com.palantir.javapoet.TypeSpec;
+import com.palantir.javapoet.WildcardTypeName;
 import com.palantir.javapoet.MethodSpec;
+import com.palantir.javapoet.ParameterizedTypeName;
 import com.palantir.javapoet.TypeName;
 
 @AutoService(Processor.class)
@@ -57,12 +63,16 @@ public class AngarionProcessor extends AbstractProcessor {
     private static final ClassName VAR_HANDLE = ClassName.get("java.lang.invoke", "VarHandle");
     private static final ClassName PATH_ELEMENT = ClassName.get("java.lang.foreign", "MemoryLayout", "PathElement");
     private static final ClassName STANDARD_CHARSETS_UTF_8 = ClassName.get("java.nio.charset", "StandardCharsets", "UTF_8");
+    private static final ClassName DATA_LAYOUT = ClassName.get("br.angarion.dev.engine.communication", "DataLayout");
 
     private static final String DEFAULT_LAYOUT_NAME = "LAYOUT";
     private static final String DEFAULT_SEGMENT_NAME = "segment";
 
     private static final int STRING_MAX_SIZE = 64;
     private static final String STRING_DEFAULT_OFFSET_NAME = "Offset"; // componentName + offset
+
+    private boolean componentResolverGenerated = false;
+    private final Object2ObjectOpenHashMap<ClassName, ClassName> payload2DataLayout = new Object2ObjectOpenHashMap<>();
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
@@ -71,34 +81,50 @@ public class AngarionProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        if (roundEnv.processingOver()) {
+            return true;
+        }
+
         Elements elementUtils = processingEnv.getElementUtils();
         Types typeUtils = processingEnv.getTypeUtils();
         Messager messager = processingEnv.getMessager();
 
         Set<? extends Element> types = roundEnv.getElementsAnnotatedWith(Type.class);
-        var dataLayouts = new ArrayList<ClassName>();
 
         for (Element element : types) {
-            Optional<ClassName> dataLayout = createDataLayout(element, elementUtils, typeUtils, messager);
+            Optional<TypeComponent> typeOptional = getTypeValues(element, elementUtils, messager, typeUtils);
+
+            if (typeOptional.isEmpty()) {
+                continue;
+            }
+
+            TypeComponent typeComponent = typeOptional.get();
+            Optional<ClassName> dataLayout = createDataLayout(typeComponent, element, elementUtils, typeUtils, messager);
+
             if (dataLayout.isEmpty()) {
-                messager.printMessage(Diagnostic.Kind.ERROR, "Error generating DataLayout");
                 return false;
             }
-            dataLayouts.add(dataLayout.get());
+
+            payload2DataLayout.put(ClassName.get(typeComponent.payload()), dataLayout.get());
+        }
+
+        if (!componentResolverGenerated) {
+            componentResolverGenerated = createComponentResolver(
+                "ComponentResolverImpl",
+                messager,
+                payload2DataLayout
+            ).isPresent();
         }
 
         return true;
     }
 
-    private Optional<ClassName> createDataLayout(
-        Element element,
-        Elements elementUtils,
-        Types typeUtils,
-        Messager messager)
-    {
-        AnnotationMirror mirror = getAnnotationMirror(element, TYPE_ANNOTATION_PATH);
+    private Optional<TypeComponent> getTypeValues(
+        Element element, Elements elementUtils, Messager messager, Types typeUtils
+    ) {
         var valuesInRound = new LinkedHashMap<String, TypeMirror>();
-        TypeElement payloadElement = null;
+        AnnotationMirror mirror = getAnnotationMirror(element, TYPE_ANNOTATION_PATH);
+        TypeElement payload = null;
         boolean isNotification = false;
         boolean isCpuIntensive = false;
         boolean isBlocking = false;
@@ -108,18 +134,16 @@ public class AngarionProcessor extends AbstractProcessor {
             return Optional.empty();
         }
 
-        Map<? extends ExecutableElement, ? extends AnnotationValue> values =
-            elementUtils.getElementValuesWithDefaults(mirror);
-
+        Map<? extends ExecutableElement, ? extends AnnotationValue> values = elementUtils.getElementValuesWithDefaults(mirror);
         for (var entry : values.entrySet()) {
             String keyName = entry.getKey().getSimpleName().toString();
 
             switch (keyName) {
                 case "payload" -> {
                     TypeMirror payloadType = (TypeMirror) entry.getValue().getValue();
-                    payloadElement = (TypeElement) typeUtils.asElement(payloadType);
+                    payload = (TypeElement) typeUtils.asElement(payloadType);
 
-                    for (RecordComponentElement component : payloadElement.getRecordComponents()) {
+                    for (RecordComponentElement component : payload.getRecordComponents()) {
                         String name = component.getSimpleName().toString();
                         TypeMirror type = component.asType();
 
@@ -170,16 +194,33 @@ public class AngarionProcessor extends AbstractProcessor {
             }
         }
 
-        if (payloadElement == null) {
-            return Optional.empty();
-        }
+        TypeComponent typeComponent = new TypeComponent(
+            payload, valuesInRound, isNotification, isCpuIntensive, isBlocking, familyName);
+
+        return Optional.of(typeComponent);
+    }
+
+    private Optional<ClassName> createDataLayout(
+        TypeComponent type,
+        Element element,
+        Elements elementUtils,
+        Types typeUtils,
+        Messager messager)
+    {
+        LinkedHashMap<String, TypeMirror> valuesInRound = type.values();
+
+        Element typeElement = type.payload();
+        boolean isNotification = type.isNotification();
+        boolean isCpuIntensive = type.isCpuIntensive();
+        boolean isBlocking = type.isBlocking();
+        String familyName = type.familyName();
 
         String defaultLayoutName = "LAYOUT";
 
         List<MemoryLayout> orderedLayouts = new ArrayList<>(valuesInRound.size());
         for (var entry : valuesInRound.entrySet()) {
-            TypeMirror type = entry.getValue();
-            MemoryLayout fieldLayout = switch (type.getKind()) {
+            TypeMirror elementType = entry.getValue();
+            MemoryLayout fieldLayout = switch (elementType.getKind()) {
                 case INT -> ValueLayout.JAVA_INT.withOrder(ORDER);
                 case BYTE -> ValueLayout.JAVA_BYTE.withOrder(ORDER);
                 case SHORT -> ValueLayout.JAVA_SHORT.withOrder(ORDER);
@@ -188,10 +229,10 @@ public class AngarionProcessor extends AbstractProcessor {
                 case DOUBLE -> ValueLayout.JAVA_DOUBLE.withOrder(ORDER);
                 case BOOLEAN -> ValueLayout.JAVA_BOOLEAN.withOrder(ORDER);
                 default -> {
-                    if (type.toString().equals("java.lang.String")) {
+                    if (elementType.toString().equals("java.lang.String")) {
                         yield MemoryLayout.sequenceLayout(STRING_MAX_SIZE, ValueLayout.JAVA_BYTE);
                     }
-                    throw new IllegalArgumentException("Type not supported: " + type);
+                    throw new IllegalArgumentException("Type not supported: " + elementType);
                 }
             };
             orderedLayouts.add(fieldLayout.withName(entry.getKey()));
@@ -214,8 +255,8 @@ public class AngarionProcessor extends AbstractProcessor {
             }
 
             String name = entry.getKey();
-            TypeMirror type = entry.getValue();
-            CodeBlock fieldLayout = switch (type.getKind()) {
+            TypeMirror valueType = entry.getValue();
+            CodeBlock fieldLayout = switch (valueType.getKind()) {
                 case INT -> CodeBlock.of("$T.JAVA_INT.withOrder($T.BIG_ENDIAN).withName($S)", VALUE_LAYOUT, ByteOrder.class, name);
                 case BYTE -> CodeBlock.of("$T.JAVA_BYTE.withOrder($T.BIG_ENDIAN).withName($S)", VALUE_LAYOUT, ByteOrder.class, name);
                 case SHORT -> CodeBlock.of("$T.JAVA_SHORT.withOrder($T.BIG_ENDIAN).withName($S)", VALUE_LAYOUT, ByteOrder.class, name);
@@ -224,7 +265,7 @@ public class AngarionProcessor extends AbstractProcessor {
                 case DOUBLE -> CodeBlock.of("$T.JAVA_DOUBLE.withOrder($T.BIG_ENDIAN).withName($S)", VALUE_LAYOUT, ByteOrder.class, name);
                 case BOOLEAN -> CodeBlock.of("$T.JAVA_BOOLEAN.withOrder($T.BIG_ENDIAN).withName($S)", VALUE_LAYOUT, ByteOrder.class, name);
                 default -> {
-                    if (type.toString().equals("java.lang.String")) {
+                    if (valueType.toString().equals("java.lang.String")) {
                         yield CodeBlock.of(
                             "$T.sequenceLayout($L, $T.JAVA_BYTE).withName($S)",
                             MEMORY_LAYOUT,
@@ -232,7 +273,7 @@ public class AngarionProcessor extends AbstractProcessor {
                             VALUE_LAYOUT,
                             name);
                     }
-                    throw new IllegalArgumentException("Type not supported: " + type);
+                    throw new IllegalArgumentException("Type not supported: " + valueType);
                 }
             };
             layoutInitializer.add(fieldLayout);
@@ -253,7 +294,7 @@ public class AngarionProcessor extends AbstractProcessor {
                 .initializer(layoutInitializer.build())
                 .build();
 
-        String generatedClassName = payloadElement.getSimpleName() + "Layout";
+        String generatedClassName = typeElement.getSimpleName() + "Layout";
         TypeSpec.Builder generatedClass = TypeSpec.classBuilder(generatedClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addField(layoutField);
@@ -301,7 +342,7 @@ public class AngarionProcessor extends AbstractProcessor {
         }
 
         String payloadTypeDefaultName = "payloadType";
-        TypeName payloadType = TypeName.get(payloadElement.asType());
+        TypeName payloadType = TypeName.get(typeElement.asType());
 
         FieldSpec payloadTypeField = FieldSpec.builder(payloadType, payloadTypeDefaultName)
             .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
@@ -378,7 +419,7 @@ public class AngarionProcessor extends AbstractProcessor {
 
         generatedClass.addSuperinterface(DataLayout.class);
 
-        String packageName = elementUtils.getPackageOf(payloadElement)
+        String packageName = elementUtils.getPackageOf(typeElement)
                 .getQualifiedName()
                 .toString();
 
@@ -395,6 +436,71 @@ public class AngarionProcessor extends AbstractProcessor {
         }
     }
 
+    private Optional<ClassName> createComponentResolver(
+        String name,
+        Messager messager,
+        Object2ObjectOpenHashMap<ClassName, ClassName> payload2DataLayout
+    ){
+        TypeSpec.Builder typeSpec = TypeSpec.classBuilder(name)
+            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+            .addSuperinterface(ComponentResolver.class);
+
+        TypeName lookupMethodReturnType = ParameterizedTypeName.get(
+            ClassName.get(InnerProcessor.class),
+            WildcardTypeName.subtypeOf(Object.class) // Represents <?>
+        );
+
+        ClassName classType = ClassName.get(Class.class);
+
+        /*
+            We're going to use a switch case instead of a array static mapping
+            --
+            FieldSpec processorsField = FieldSpec.builder(ArrayTypeName.of(int.class), "processors")
+                .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.STATIC)
+                .build();
+        */
+
+        MethodSpec lookupMethod = MethodSpec.methodBuilder("lookup")
+            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+            .returns(lookupMethodReturnType)
+            .addParameter(int.class, "id")
+            .addStatement("return null")
+            .build();
+
+        WildcardTypeName dataLayoutWildcardTypeName = WildcardTypeName.subtypeOf(DATA_LAYOUT);
+        ParameterizedTypeName getDataLayoutReturnMethod = ParameterizedTypeName.get(classType, dataLayoutWildcardTypeName);
+
+        MethodSpec.Builder getDataLayoutMethod = MethodSpec.methodBuilder("getDataLayout")
+            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+            .returns(getDataLayoutReturnMethod)
+            .addParameter(Payload.class, "payload");
+
+        getDataLayoutMethod.beginControlFlow("return switch ($N)", "payload");
+
+        payload2DataLayout.forEach((payload, dataLayout) -> {
+            getDataLayoutMethod.addStatement("case $T p -> $T.class", payload, dataLayout);
+        });
+
+        getDataLayoutMethod.addStatement("default -> null");
+        getDataLayoutMethod.endControlFlow();
+        getDataLayoutMethod.addCode(";\n");
+
+        typeSpec.addMethod(lookupMethod).addMethod(getDataLayoutMethod.build());
+
+        String packageName = "br.angarion.dev.engine.runtime";
+
+        JavaFile classFile = JavaFile.builder(packageName, typeSpec.build())
+            .skipJavaLangImports(true)
+            .build();
+
+        try {
+            classFile.writeTo(processingEnv.getFiler());
+            return Optional.of(ClassName.get(packageName, name));
+        } catch (IOException e) {
+            messager.printMessage(Diagnostic.Kind.ERROR, e.toString());
+            return Optional.empty();
+        }
+    }
 
     private AnnotationMirror getAnnotationMirror(Element element, String annotationName) {
         for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
@@ -410,5 +516,14 @@ public class AngarionProcessor extends AbstractProcessor {
         String varHandleName,
         TypeName type,
         String parameterName
+    ) {}
+
+    private record TypeComponent (
+        TypeElement payload,
+        LinkedHashMap<String, TypeMirror> values,
+        boolean isNotification,
+        boolean isCpuIntensive,
+        boolean isBlocking,
+        String familyName
     ) {}
 }
