@@ -3,6 +3,8 @@ package br.angarion.dev.engine.communication.response;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 
+import br.angarion.dev.engine.communication.UnsignedShort;
+
 public final class ApprovedResponse {
 
     private ApprovedResponse() {}
@@ -12,7 +14,7 @@ public final class ApprovedResponse {
     );
 
     public static final void writeHeader(MemorySegment src, int correlationId) {
-        if (correlationId < 0 || correlationId > 0xFFFF) // Unsigned short (0..65535)
+        if (!UnsignedShort.checkRange(correlationId))
             throw new IllegalArgumentException("correlationId must be between 0 and 65535");
 
         Response.CORRELATION_ID.set(src, 0L, correlationId);

@@ -2,6 +2,8 @@ package br.angarion.dev.engine.communication.notification;
 
 import br.angarion.dev.engine.communication.BaseProtocol;
 import br.angarion.dev.engine.communication.MBT;
+import br.angarion.dev.engine.communication.UnsignedShort;
+
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.StructLayout;
@@ -20,7 +22,7 @@ public final class Notification {
         int typeId,
         int totalSize
     ) {
-        if (typeId < 0 || typeId > 0xFFFF) // Unsigned short (0..65535)
+        if (!UnsignedShort.checkRange(typeId))
             throw new IllegalArgumentException("typeId must be between 0 and 65.535");
 
         if (totalSize > 1460)

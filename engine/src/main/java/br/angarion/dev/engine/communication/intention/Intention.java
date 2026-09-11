@@ -2,6 +2,8 @@ package br.angarion.dev.engine.communication.intention;
 
 import br.angarion.dev.engine.communication.BaseProtocol;
 import br.angarion.dev.engine.communication.MBT;
+import br.angarion.dev.engine.communication.UnsignedShort;
+
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
@@ -37,10 +39,10 @@ public final class Intention {
         int totalSize,
         int correlationId
     ) {
-        if (typeId < 0 || typeId > 0xFFFF) // Unsigned short (0...65535)
+        if (!UnsignedShort.checkRange(typeId))
             throw new IllegalArgumentException("typeId must be between 0 and 65.535");
 
-        if (correlationId < 0 || correlationId > 0xFFFF) // Unsigned short (0...65535)
+        if (!UnsignedShort.checkRange(correlationId))
             throw new IllegalArgumentException("correlationId must be between 0 and 65.535");
 
         if (totalSize > 1460)

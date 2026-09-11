@@ -2,6 +2,8 @@ package br.angarion.dev.engine.communication.event;
 
 import br.angarion.dev.engine.communication.BaseProtocol;
 import br.angarion.dev.engine.communication.MBT;
+import br.angarion.dev.engine.communication.UnsignedShort;
+
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemoryLayout.PathElement;
 import java.lang.foreign.MemorySegment;
@@ -37,14 +39,14 @@ public final class Event {
         int totalSize,
         int originId
     ) {
-        if (typeId < 0 || typeId > 0xFFFF) // Unsigned short (0..65535)
+        if (!UnsignedShort.checkRange(typeId))
             throw new IllegalArgumentException("typeId must be between 0 and 65.535");
+
+        if (!UnsignedShort.checkRange(originId))
+            throw new IllegalArgumentException("originId must be between 0 and 65.535");
 
         if (totalSize > 1460)
             throw new IllegalArgumentException("totalSize max: 1460");
-
-        if (originId < 0 || originId > 0xFFFF) // Unsigned short (0..65535)
-        throw new IllegalArgumentException("originId must be between 0 and 65.535");
 
         BaseProtocol.TOTAL_SIZE.set(dest, 0L, totalSize);
         MBT.TYPE.set(dest, 0L, typeId);

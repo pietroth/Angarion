@@ -7,6 +7,8 @@ import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
 
+import br.angarion.dev.engine.communication.UnsignedShort;
+
 public final class DeniedResponse {
 
     private DeniedResponse() {}
@@ -25,11 +27,11 @@ public final class DeniedResponse {
         int correlationId,
         int reasonCode
     ) {
-        if (reasonCode < 0 || reasonCode > 0xFFFF) // Unsigned short (0...65535)
-            throw new IllegalArgumentException("reasonCode must be between 0 and 65.535");
-
-        if (correlationId < 0 || correlationId > 0xFFFF) // Unsigned short (0...65535)
+        if (!UnsignedShort.checkRange(correlationId))
             throw new IllegalArgumentException("correlationId must be between 0 and 65.535");
+
+        if (!UnsignedShort.checkRange(reasonCode))
+            throw new IllegalArgumentException("reasonCode must be between 0 and 65.535");
 
         Response.CORRELATION_ID.set(src, 0L, correlationId);
         Response.STATUS.set(src, 0L, Response.DENIED);
