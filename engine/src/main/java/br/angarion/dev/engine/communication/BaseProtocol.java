@@ -17,7 +17,7 @@ public final class BaseProtocol {
         )
     );
 
-    public static final long LAYOUT_SIZE = LAYOUT.byteSize();
+    public static final int LAYOUT_SIZE = (int) LAYOUT.byteSize();
 
     public static final VarHandle TOTAL_SIZE = LAYOUT.varHandle(
         PathElement.groupElement("totalSize")
